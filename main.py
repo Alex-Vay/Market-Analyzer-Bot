@@ -1,6 +1,14 @@
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+# Import the necessary module
+from dotenv import load_dotenv
+import os
 
+# Загрузка переменных окружения из .env файла
+load_dotenv()
+
+# Access environment variables as if they came from the actual environment
+TOKEN = os.getenv('TOKEN')
 
 # Функция для обработки команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -28,7 +36,7 @@ def main():
     """Запуск бота"""
     # Создание приложения и передача ему токен.
 
-    application = ApplicationBuilder().token("7106871526:AAEEPNNZoO3mV_-a2Wc_H1Ag5EzMALlbVHw").build()
+    application = ApplicationBuilder().token(TOKEN).build()
 
     # Регистрация обработчика команды /start
     application.add_handler(CommandHandler("start", start))
