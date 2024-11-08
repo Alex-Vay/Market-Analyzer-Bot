@@ -1,4 +1,4 @@
-import bs4
+from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -9,36 +9,60 @@ import re
 from selenium import webdriver
 
 
+def extract_product_title(soup: BeautifulSoup) -> str:
+    h1_tag = soup.find('h1')
+    return h1_tag.text.strip() if h1_tag else 'Название не найдено'
+
+
+def extract_product_price(soup: BeautifulSoup) -> str:
+    price_element = soup.find('span', string='без Ozon Карты')
+    if price_element:
+        product_price_ozon_card = price_element.parent.parent.find('div').find_all('span')
+        return product_price_ozon_card[0].text if product_price_ozon_card else 'Цена не найдена'
+    else:
+        product_price_div = soup.find('div', attrs={'data-widget': 'webPrice'})
+        if product_price_div:
+            return product_price_div.find('span').text if product_price_div.find('span') else 'Цена не найдена'
+    return 'Цена не найдена'
+
+
+def extract_product_id(soup: BeautifulSoup) -> str:
+    product_id_element = soup.find('button', attrs={'data-widget': 'webDetailSKU'})
+    return product_id_element.find('div').text if product_id_element else 'Артикул не найден'
+
+
+def extract_product_rating(soup: BeautifulSoup):
+    product_score = soup.find('div', attrs={'data-widget': 'webSingleProductScore'})
+    if product_score:
+        rating, feedback_count = product_score.find('div').text.split(' • ')
+        return f'Рейтинг {rating}, {feedback_count}'
+    return 'Рейтинг не найден'
+
+
 def collect_product_data(driver: uc.Chrome, product_url=''):
     '''парсинг странички товара'''
     # открытие новой вкладки в браузере
     driver.switch_to.new_window('tab')
-    time.sleep(3)
-    # открытие ссылки товара в новой вкладке
     driver.get(product_url)
-    time.sleep(3)
-    # артикул товара
-
+    # Ожидание загрузки страницы
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'h1')))
+    # html код страницы
     page_source = driver.page_source
-    soup = bs4.BeautifulSoup(page_source, 'lxml')
-    time.sleep(2)
+    # нужен только тег div с атрибутом data-widget="container" где вся нужная информация
+    product_info_tag_str = re.search(r'(<div\s+data-widget="container"[^>]*>.*</div>)<div data-widget="webStickyProducts"[^>]*>',
+                            page_source,
+                            re.DOTALL).group()
+
+    soup = BeautifulSoup(product_info_tag_str, 'lxml')
     # получение названия товара
-    h1_tag = soup.find('h1').text
-    title_full = re.search(r'\b.+\b', h1_tag).group()
+    title_full = extract_product_title(soup)
     title_short = title_full[:50].strip(', ') + '...'
-    # получение цены, цена может быть с озон картой или без
-    price_element = soup.find('span', string='без Ozon Карты')
-    time.sleep(2)
-    if price_element:
-        product_price_ozon_card = price_element.parent.parent.find('div').find_all('span')
-        price = product_price_ozon_card[0].text
-    else:
-        product_price_div = soup.find('div', attrs={'data-widget': 'webPrice'}).find('span')
-        price = product_price_div.text
-    product_id = soup.find('button', attrs={'data-widget': 'webDetailSKU'}).find('div').text
-    product_score = soup.find('div', attrs={'data-widget': 'webSingleProductScore'}).find('div').text
-    rating, feedback_count = product_score.split(' • ')
-    rating_and_feedback = f'Рейтинг {rating}, {feedback_count}'
+    # Получение цены товара
+    price = extract_product_price(soup)
+    # Получение артикул и рейтинга
+    product_id = extract_product_id(soup)
+    rating_and_feedback = extract_product_rating(soup)
+
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
     return f"{title_short}\n{product_id}\n{price}\n{rating_and_feedback}"
@@ -48,30 +72,32 @@ def get_product(item_name='ноутбук lenovo'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     driver = uc.Chrome()
-    # driver.implicitly_wait(5)
+    driver.implicitly_wait(5)
     url = 'https://www.ozon.ru'
     driver.get(url)
-    time.sleep(5)
+    # Ожидание загрузки страницы
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'text')))
     # находим строку поиска
     input_field = driver.find_element(By.NAME, 'text')
     input_field.clear()
     # вставляем товар для поиска
     input_field.send_keys(item_name)
-    time.sleep(2)
     # нажатие enter
     input_field.send_keys(Keys.ENTER)
-    time.sleep(2)
+
     # сортировка по рейтингу (можно убрать)
     current_url = driver.current_url
     driver.get(f'{current_url}&sorting=rating')
-    time.sleep(2)
+    WebDriverWait(driver, 10).until(EC.url_contains('sorting=rating'))
     # ссылка на товар
-    link = driver.find_element(By.CLASS_NAME, 'tile-hover-target').get_attribute('href')
+    link = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'tile-hover-target'))
+    ).get_attribute('href')
     print('начинается сбор данных')
     product_data = collect_product_data(driver=driver, product_url=link)
     print(product_data)
     print('сбор данных окончен')
-    driver.close()
+    # driver.close()
     driver.quit()
 
 
