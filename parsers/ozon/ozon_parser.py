@@ -39,7 +39,7 @@ def extract_product_rating(soup: BeautifulSoup):
     return 'Рейтинг не найден'
 
 
-def collect_product_data(driver: uc.Chrome, product_url=''):
+def collect_product_data(driver: uc.Chrome, product_url: str):
     '''парсинг странички товара'''
     # открытие новой вкладки в браузере
     driver.switch_to.new_window('tab')
