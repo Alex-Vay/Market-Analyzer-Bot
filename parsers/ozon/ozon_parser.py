@@ -73,22 +73,10 @@ def get_product(item_name='ноутбук lenovo'):
     item_name: товар, который вводит пользователь в боте'''
     driver = uc.Chrome()
     driver.implicitly_wait(5)
-    url = 'https://www.ozon.ru'
+    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
     driver.get(url)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, 'text')))
-    # находим строку поиска
-    input_field = driver.find_element(By.NAME, 'text')
-    input_field.clear()
-    # вставляем товар для поиска
-    input_field.send_keys(item_name)
-    # нажатие enter
-    input_field.send_keys(Keys.ENTER)
-
-    # сортировка по рейтингу (можно убрать)
-    current_url = driver.current_url
-    driver.get(f'{current_url}&sorting=rating')
-    WebDriverWait(driver, 10).until(EC.url_contains('sorting=rating'))
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
     # ссылка на товар
     link = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'tile-hover-target'))
