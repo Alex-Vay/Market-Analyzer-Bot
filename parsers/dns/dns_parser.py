@@ -4,13 +4,13 @@ import requests
 
 
 def get_product(product='', price=''):
-    # url = 'https://www.dns-shop.ru/search/'
     params = {
         'q': 'realme 8',
         'category': '17a8a01d16404e77',
     }
 
-    response = requests.get('https://www.dns-shop.ru/search/', params=params, cookies=cookies, headers=headers)
+    url = 'https://www.dns-shop.ru/search/'
+    response = requests.get(url=url, params=params, cookies=cookies, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
 
     product_div_tag = soup.find('div', attrs={'data-id': 'product'})
