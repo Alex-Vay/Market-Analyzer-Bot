@@ -58,7 +58,7 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     return f'{title}\n{price}\n{product_id}\n{rating}'
 
 
-def get_product(item_name='realme телефон'):
+def get_product(item_name='lenovo legion', price=''):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
     driver = uc.Chrome()
@@ -78,6 +78,7 @@ def get_product(item_name='realme телефон'):
     print('сбор данных окончен')
     driver.close()
     driver.quit()
+    return link
 
 
 if __name__ == '__main__':

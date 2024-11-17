@@ -68,7 +68,7 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     return f"{title_short}\n{product_id}\n{price}\n{rating_and_feedback}"
 
 
-def get_product(item_name='ноутбук lenovo'):
+def get_product(item_name='', price=''):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     driver = uc.Chrome()
@@ -85,8 +85,9 @@ def get_product(item_name='ноутбук lenovo'):
     product_data = collect_product_data(driver=driver, product_url=link)
     print(product_data)
     print('сбор данных окончен')
-    # driver.close()
+    driver.close()
     driver.quit()
+    return link
 
 
 if __name__ == '__main__':

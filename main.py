@@ -1,3 +1,6 @@
+import asyncio
+import concurrent.futures
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -9,12 +12,14 @@ from telegram.ext import (
 )
 from dotenv import load_dotenv
 import os
-
+from parsers.ozon import ozon_parser
+from parsers.wb import wb_parser
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
+
 
 # Функция для обработки команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -38,7 +43,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 # Функция для создания клавиатуры с магазинами
 def create_store_keyboard(selected_stores):
     store_keyboard = []
-    for i in range(1, 4):
+    for i in range(1, 3):
         store_name = f"Магазин {i}"
         button_text = f"✅ {store_name}" if store_name in selected_stores else store_name
         store_keyboard.append([InlineKeyboardButton(button_text, callback_data=f'store{i}')])
@@ -80,25 +85,64 @@ async def finish_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         await update.callback_query.edit_message_text(
             text=f"Вы выбрали следующие магазины: {stores_list}\n"
                  f"Пожалуйста, укажите товар в формате:\nМарка\nМодель\nЦена.")
-        # Устанавливаем состояние ожидания названия товара
+        # Устанавливаем состояние ожидания названия товара и сохраняем список магазинов
         context.user_data['awaiting_product_name'] = True
+        context.user_data['stores_list'] = selected_stores
     else:
-        await update.callback_query.edit_message_text(text="Вы не выбрали ни одного магазина.")
+        await update.callback_query.edit_message_text(text="Вы не выбрали ни одного магазина./start")
 
 
 async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if context.user_data.get('awaiting_product_name'):
         product_info = update.message.text
+        stores_list = context.user_data.get('stores_list', '')
+        stores_str = ', '.join(stores_list)
         product_info_split = product_info.split('\n')
-        product_text = f"Марка: {product_info_split[0]}\n" \
-                       f"Модель: {product_info_split[1]}\n" \
-                       f"Цена: {product_info_split[2]}."
-
-        await update.message.reply_text(f"Вы указали товар:\n{product_text}")
+        product_text = f"\t\t<b>Марка</b>: {product_info_split[0]}\n" \
+                       f"\t<b>Модель</b>: {product_info_split[1]}\n" \
+                       f"\t<b>Цена</b>: {product_info_split[2]}."
+        keyboard = [
+            [InlineKeyboardButton("Да, начать поиск!", callback_data='start_search')],
+            [InlineKeyboardButton("Нет, указать информацию заново", callback_data='enter_again')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.message.reply_text(text=f"Вы указали следующую информацию о товаре:\n"
+                                             f"{product_text}\n"
+                                             f"Магазины: {stores_str}\n\n"
+                                             f"<b>Вы уверены, что хотите начать поиск?</b>",
+                                        reply_markup=reply_markup,
+                                        parse_mode='html')
         # Сбрасываем состояние ожидания
         context.user_data['awaiting_product_name'] = False
+        # сохраняем информацию о товаре
+        context.user_data['product_info'] = product_info_split
+
     else:
         await update.message.reply_text("Пожалуйста, сначала выберите магазины.")
+
+
+async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    product_info = context.user_data.pop('product_info', '')
+    stores_list = context.user_data.pop('stores_list', [])
+    product_join = product_info[0] + ' ' + product_info[1]
+    results = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        # Создаем задачи для каждого парсера
+        future_to_store = {executor.submit(ozon_parser.get_product if store == 'Магазин 1' else wb_parser.get_product,
+                                           product_join, ''): store
+                           for store in stores_list}
+
+        # Обрабатываем результаты по мере их завершения
+        for future in concurrent.futures.as_completed(future_to_store):
+            store = future_to_store[future]
+            try:
+                result = future.result()
+                results.append(result)
+            except Exception as exc:
+                print(f'{store} generated an exception: {exc}')
+
+        # Отправка результатов пользователю
+        await update.callback_query.edit_message_text(text=results)
 
 
 # Основная функция для обработки нажатий на кнопки
@@ -115,7 +159,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     elif query.data == 'help':
         await query.edit_message_text(text="Вы можете использовать команды /start.")
     elif query.data == 'info':
-        await query.edit_message_text(text="Я бот, созданный для помощи пользователям!")
+        await query.edit_message_text(text="Я бот, созданный для помощи пользователям!\nНажмите /start")
+    elif query.data == 'start_search':
+        await start_search(update, context)
+    elif query.data == 'enter_again':
+        await choose_stores(update, context)  # Перенаправляем на выбор магазинов
 
 
 def main() -> None:
@@ -124,6 +172,7 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CallbackQueryHandler(button_handler))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_product_name))
+
     # Запуск бота
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
