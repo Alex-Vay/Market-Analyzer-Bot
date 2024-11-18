@@ -8,11 +8,11 @@ def get_data_mvideo(ids):
         os.mkdir('data')
     params = {
         'offset': '0',
-        'filterParams': 'WyJ0b2xrby12LW5hbGljaGlpIiwiLTEyIiwiZGEiXQ==',
+        # 'filterParams': 'WyJ0b2xrby12LW5hbGljaGlpIiwiLTEyIiwiZGEiXQ==',
         'doTranslit': 'true',
         'limit': '24',
         'query': f'{ids}',
-        'context': 'v2dzaG9wX2lkZFMwMDJhcXXQvdC+0YPRgtCx0YPQuiBsZW5vdm9sY2F0ZWdvcnlfaWRzn///',
+        # 'context': 'v2dzaG9wX2lkZFMwMDJhcXXQvdC+0YPRgtCx0YPQuiBsZW5vdm9sY2F0ZWdvcnlfaWRzn///',
         # 'sort' : 'price_asc',
     }
     session = requests.Session()
@@ -42,19 +42,22 @@ def get_data_mvideo(ids):
                         truePriceObject = price
                 item_base_price = truePriceObject['price']['basePrice']
                 item_current_price = truePriceObject['price']['salePrice']
-                item ={
-                    'link' : link,
-                    'rating': product['rating'],
-                    'item_basePrice': item_base_price,
-                    'item_currentPrice': item_current_price,
-                }
-                yield item
+                rating = product['rating']
+                # item ={
+                #     'name' : product['name'],
+                #     'link' : link,
+                #     'rating': rating,
+                #     'item_basePrice': item_base_price,
+                #     'item_currentPrice': item_current_price,
+                # }
+                # yield item
+
+                return f"{product['name']}\n{link}\n{item_current_price}\n{rating['star']}-{rating['count']}"
 
         else:
-            print(f'[!] Skipped { + 1} page')
+            print(f'[!] Skipped')
     except Exception as e:
         print(f'[!] Skipped, {e.__class__.__name__}')
 
 
-for i in get_data_mvideo('Ноутбук Lenovo'):
-    print(i)
+print(get_data_mvideo('Ноутбук Lenovo'))
