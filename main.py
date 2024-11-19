@@ -13,11 +13,14 @@ from dotenv import load_dotenv
 import os
 from parsers.ozon import ozon_parser
 from parsers.wb import wb_parser
+
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
+
+STORES = ['Ozon', 'Wildberries']
 
 
 # Функция для обработки команды /start
@@ -42,8 +45,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 # Функция для создания клавиатуры с магазинами
 def create_store_keyboard(selected_stores):
     store_keyboard = []
-    for i in range(1, 3):
-        store_name = f"Магазин {i}"
+    for i in range(len(STORES)):
+        store_name = STORES[i]
         button_text = f"✅ {store_name}" if store_name in selected_stores else store_name
         store_keyboard.append([InlineKeyboardButton(button_text, callback_data=f'store{i}')])
 
@@ -61,9 +64,8 @@ async def choose_stores(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 # Функция для обработки выбора магазина
 async def select_store(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
-    store_name = f"Магазин {query.data[-1]}"
+    store_name = STORES[int(query.data[-1])]
     selected_stores = context.user_data['selected_stores']
-
     # Добавляем или удаляем магазин из выбранных
     if store_name in selected_stores:
         selected_stores.remove(store_name)
@@ -83,7 +85,7 @@ async def finish_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         stores_list = ', '.join(selected_stores)
         await update.callback_query.edit_message_text(
             text=f"Вы выбрали следующие магазины: {stores_list}\n"
-                 f"Пожалуйста, укажите товар в формате:\nТовар (тип, бренд, модель, цвет и др.\nЦена.")
+                 f"Пожалуйста, укажите товар в формате:\nТовар (тип, бренд, модель, цвет и др.)\nЦена.")
         # Устанавливаем состояние ожидания названия товара и сохраняем список магазинов
         context.user_data['awaiting_product_name'] = True
         context.user_data['stores_list'] = selected_stores
@@ -97,8 +99,8 @@ async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         stores_list = context.user_data.get('stores_list', '')
         stores_str = ', '.join(stores_list)
         product_info_split = product_info.split('\n')
-        product_text = f"\t\t<b>Товар</b>: {product_info_split[0]}\n" \
-                       f"\t<b>Цена</b>: {product_info_split[1]}."
+        product_text = f"<b>Товар</b>: {product_info_split[0]}\n" \
+                       f"<b>Цена</b>: {product_info_split[1]}."
         keyboard = [
             [InlineKeyboardButton("Да, начать поиск!", callback_data='start_search')],
             [InlineKeyboardButton("Нет, указать информацию заново", callback_data='enter_again')]
