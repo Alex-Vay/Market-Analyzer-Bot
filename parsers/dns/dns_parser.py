@@ -1,9 +1,12 @@
+import re
+
 from config import headers, cookies
 from bs4 import BeautifulSoup
 import requests
 
 
 def get_product(product='', price=''):
+    # url = 'https://www.dns-shop.ru/search/'
     params = {
         'q': 'realme 8',
         'category': '17a8a01d16404e77',
@@ -26,5 +29,6 @@ def get_product(product='', price=''):
     feedback_count = feedback.text
 
     return link, product_title, feedback_score, feedback_count
+
 
 print(get_product())

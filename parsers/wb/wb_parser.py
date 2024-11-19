@@ -50,12 +50,12 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     soup = BeautifulSoup(product_info_tag_str, 'lxml')
     title = extract_product_title(soup)
     price = extract_product_price(soup)
-    product_id = extract_product_id(soup)
+    # product_id = extract_product_id(soup)
     rating = extract_product_rating(soup)
 
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
-    return f'{title}\n{price}\n{product_id}\n{rating}'
+    return title, price, rating, product_url
 
 
 def get_product(item_name='lenovo legion', price=''):
@@ -78,7 +78,7 @@ def get_product(item_name='lenovo legion', price=''):
     print('сбор данных окончен')
     driver.close()
     driver.quit()
-    return link
+    return product_data
 
 
 if __name__ == '__main__':

@@ -60,12 +60,12 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     # Получение цены товара
     price = extract_product_price(soup)
     # Получение артикул и рейтинга
-    product_id = extract_product_id(soup)
+    # product_id = extract_product_id(soup)
     rating_and_feedback = extract_product_rating(soup)
 
     driver.close()
     driver.switch_to.window(driver.window_handles[0])
-    return f"{title_short}\n{product_id}\n{price}\n{rating_and_feedback}"
+    return title_short, price, rating_and_feedback, product_url
 
 
 def get_product(item_name='', price=''):
@@ -87,7 +87,7 @@ def get_product(item_name='', price=''):
     print('сбор данных окончен')
     driver.close()
     driver.quit()
-    return link
+    return product_data
 
 
 if __name__ == '__main__':
