@@ -7,9 +7,7 @@ import requests
 
 def get_product(product='', price=''):
     # url = 'https://www.dns-shop.ru/search/'
-    params = {
-        'q': 'realme 8',
-        'category': '17a8a01d16404e77',
+    params = {'q': 'realme 8',
     }
 
     url = 'https://www.dns-shop.ru/search/'
