@@ -58,7 +58,7 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     return title, price, rating, product_url
 
 
-def get_product(item_name='lenovo legion', price=''):
+def get_product(item_name='lenovo legion'):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
     options = uc.ChromeOptions()

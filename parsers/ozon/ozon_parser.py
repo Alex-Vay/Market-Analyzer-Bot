@@ -68,7 +68,7 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     return title_short, price, rating_and_feedback, product_url
 
 
-def get_product(item_name='', price=''):
+def get_product(item_name=''):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     options = uc.ChromeOptions()
