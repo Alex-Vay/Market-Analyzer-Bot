@@ -25,6 +25,10 @@ STORES = ['Ozon', 'Wildberries']
 
 # Функция для обработки команды /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Сохраняем ссылки на update и context
+    global current_update, current_context
+    current_update = update
+    current_context = context
     welcome_message = (
         "Привет! 👋🎉 Я ваш личный бот, готовый помочь Вам с поиском и анализом товаров с маркетплейсов🛒.\n\n"
         " \tПорядок действий:\n"
@@ -35,7 +39,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
     keyboard = [
         [InlineKeyboardButton("Найти Товар", callback_data='choose_stores')],
-        [InlineKeyboardButton("Помощь", callback_data='help')],
         [InlineKeyboardButton("Информация о боте", callback_data='info')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -90,7 +93,7 @@ async def finish_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         context.user_data['awaiting_product_name'] = True
         context.user_data['stores_list'] = selected_stores
     else:
-        await update.callback_query.edit_message_text(text="Вы не выбрали ни одного магазина./start")
+        await update.message.reply_text(text="Вы не выбрали ни одного магазина./start")
 
 
 async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -106,7 +109,7 @@ async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         reply_markup = InlineKeyboardMarkup(keyboard)
         await update.message.reply_text(text=f"Вы указали следующую информацию о товаре:\n"
                                              f"{product_text}\n"
-                                             f"Магазины: {stores_str}\n\n"
+                                             f"<b>Магазины:</b> {stores_str}\n"
                                              f"<b>Вы уверены, что хотите начать поиск?</b>",
                                         reply_markup=reply_markup,
                                         parse_mode='html')
@@ -121,8 +124,7 @@ async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     product_search = context.user_data.pop('product_info', '')
-    stores_list = context.user_data.pop('stores_list', [])
-    print(stores_list)
+    stores_list = context.user_data.get('stores_list', [])
     results = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Создаем задачи для каждого парсера
@@ -147,7 +149,13 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                       f'<b>Отзывы</b>: {results[i][2]}\n' \
                       f'<a href="{results[i][3]}">ссылка</a>'
             text += subtext
-        await update.callback_query.edit_message_text(text=text, parse_mode='html')
+        keyboard = [
+            [InlineKeyboardButton("Вернуться в меню", callback_data='start')],
+            [InlineKeyboardButton("Найти другой товар", callback_data='finish_selection')],
+            [InlineKeyboardButton("Выбрать другой маркетплейс(ы) и товар", callback_data='enter_again')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await update.callback_query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='html')
 
 
 # Основная функция для обработки нажатий на кнопки
@@ -161,14 +169,14 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await select_store(update, context)
     elif query.data == 'finish_selection':
         await finish_selection(update, context)
-    elif query.data == 'help':
-        await query.edit_message_text(text="Вы можете использовать команды /start.")
     elif query.data == 'info':
         await query.edit_message_text(text="Я бот, созданный для помощи пользователям!\nНажмите /start")
     elif query.data == 'start_search':
         await start_search(update, context)
     elif query.data == 'enter_again':
         await choose_stores(update, context)  # Перенаправляем на выбор магазинов
+    elif query.data == 'start':
+        await start(current_update, current_context)
 
 
 def main() -> None:
