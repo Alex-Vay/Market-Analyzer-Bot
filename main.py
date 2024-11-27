@@ -85,7 +85,7 @@ async def finish_selection(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         stores_list = ', '.join(selected_stores)
         await update.callback_query.edit_message_text(
             text=f"Вы выбрали следующие магазины: {stores_list}\n"
-                 f"Пожалуйста, укажите товар в формате:\nТовар (тип, бренд, модель, цвет и др.)\nЦена.")
+                 f"Пожалуйста, укажите товар в формате:\nТовар (тип, бренд, модель, цвет и др.)")
         # Устанавливаем состояние ожидания названия товара и сохраняем список магазинов
         context.user_data['awaiting_product_name'] = True
         context.user_data['stores_list'] = selected_stores
@@ -98,9 +98,7 @@ async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         product_info = update.message.text
         stores_list = context.user_data.get('stores_list', '')
         stores_str = ', '.join(stores_list)
-        product_info_split = product_info.split('\n')
-        product_text = f"<b>Товар</b>: {product_info_split[0]}\n" \
-                       f"<b>Цена</b>: {product_info_split[1]}."
+        product_text = f"<b>Товар</b>: {product_info}\n"
         keyboard = [
             [InlineKeyboardButton("Да, начать поиск!", callback_data='start_search')],
             [InlineKeyboardButton("Нет, указать информацию заново", callback_data='enter_again')]
@@ -115,21 +113,21 @@ async def handle_product_name(update: Update, context: ContextTypes.DEFAULT_TYPE
         # Сбрасываем состояние ожидания
         context.user_data['awaiting_product_name'] = False
         # сохраняем информацию о товаре
-        context.user_data['product_info'] = product_info_split
+        context.user_data['product_info'] = product_info
 
     else:
         await update.message.reply_text("Пожалуйста, сначала выберите магазины.")
 
 
 async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    product_info = context.user_data.pop('product_info', '')
+    product_search = context.user_data.pop('product_info', '')
     stores_list = context.user_data.pop('stores_list', [])
-    product_search = product_info[0]
+    print(stores_list)
     results = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Создаем задачи для каждого парсера
-        future_to_store = {executor.submit(ozon_parser.get_product if store == 'Магазин 1' else wb_parser.get_product,
-                                           product_search, ''): store
+        future_to_store = {executor.submit(ozon_parser.get_product if store == 'Ozon' else wb_parser.get_product,
+                                           product_search): store
                            for store in stores_list}
 
         # Обрабатываем результаты по мере их завершения

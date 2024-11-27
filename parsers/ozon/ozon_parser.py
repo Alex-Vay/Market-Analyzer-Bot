@@ -71,9 +71,8 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
 def get_product(item_name=''):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
-    options = uc.ChromeOptions()
-    options.add_argument('--user-data-dir=C:\\Users\\sasha\\PycharmProjects\\Market-Analyzer-Bot\\user_data_dir1')  # путь к каталогу профиля
-    driver = uc.Chrome(options=options)
+    # options = uc.ChromeOptions()
+    driver = uc.Chrome()
     driver.implicitly_wait(5)
     url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
     driver.get(url)

@@ -61,9 +61,8 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
 def get_product(item_name='lenovo legion'):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
-    options = uc.ChromeOptions()
-    options.add_argument('--user-data-dir=C:\\Users\\sasha\\PycharmProjects\\Market-Analyzer-Bot\\user_data_dir2')  # путь к каталогу профиля
-    driver = uc.Chrome(options=options)
+    # options = uc.ChromeOptions()
+    driver = uc.Chrome()
     driver.implicitly_wait(5)
     url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=rate'
     driver.get(url)
