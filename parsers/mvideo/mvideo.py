@@ -52,7 +52,7 @@ def get_data_mvideo(ids):
                 # }
                 # yield item
 
-                return f"{product['name']}\n{link}\n{item_current_price}\n{rating['star']}-{rating['count']}"
+                return product['name'], item_current_price, rating['star'] + rating['count'], link
 
         else:
             print(f'[!] Skipped')

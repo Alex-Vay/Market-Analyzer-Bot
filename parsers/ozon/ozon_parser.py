@@ -39,7 +39,7 @@ def extract_product_rating(soup: BeautifulSoup):
     return 'Рейтинг не найден'
 
 
-def collect_product_data(driver: uc.Chrome, product_url: str):
+def collect_product_data(driver: webdriver.Chrome, product_url: str):
     '''парсинг странички товара'''
     # открытие новой вкладки в браузере
     driver.switch_to.new_window('tab')
@@ -72,7 +72,7 @@ def get_product(item_name=''):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     # options = uc.ChromeOptions()
-    driver = uc.Chrome()
+    driver = webdriver.Chrome()
     driver.implicitly_wait(5)
     url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
     driver.get(url)

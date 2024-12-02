@@ -62,7 +62,7 @@ def get_product(item_name='lenovo legion'):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
     # options = uc.ChromeOptions()
-    driver = uc.Chrome()
+    driver = webdriver.Chrome()
     driver.implicitly_wait(5)
     url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=rate'
     driver.get(url)
