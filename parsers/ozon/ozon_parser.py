@@ -1,12 +1,8 @@
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
-import time
-import re
-from selenium import webdriver
 
 
 def extract_product_title(soup: BeautifulSoup) -> str:
@@ -26,9 +22,9 @@ def extract_product_price(soup: BeautifulSoup) -> str:
     return 'Цена не найдена'
 
 
-def extract_product_id(soup: BeautifulSoup) -> str:
-    product_id_element = soup.find('button', attrs={'data-widget': 'webDetailSKU'})
-    return product_id_element.find('div').text if product_id_element else 'Артикул не найден'
+# def extract_product_id(soup: BeautifulSoup) -> str:
+#     product_id_element = soup.find('button', attrs={'data-widget': 'webDetailSKU'})
+#     return product_id_element.find('div').text if product_id_element else 'Артикул не найден'
 
 
 def extract_product_rating(soup: BeautifulSoup):
@@ -46,13 +42,8 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     driver.get(product_url)
     # Ожидание загрузки страницы
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'h1')))
-    # html код страницы
-    page_source = driver.page_source
     # нужен только тег div с атрибутом data-widget="container" где вся нужная информация
-    product_info_tag_str = re.search(r'(<div\s+data-widget="container"[^>]*>.*</div>)<div data-widget="webStickyProducts"[^>]*>',
-                            page_source,
-                            re.DOTALL).group()
-
+    product_info_tag_str = driver.find_element(By.CSS_SELECTOR, "#layoutPage .container").get_attribute('outerHTML')
     soup = BeautifulSoup(product_info_tag_str, 'lxml')
     # получение названия товара
     title_full = extract_product_title(soup)
@@ -60,33 +51,34 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     # Получение цены товара
     price = extract_product_price(soup)
     # Получение артикул и рейтинга
-    # product_id = extract_product_id(soup)
     rating_and_feedback = extract_product_rating(soup)
 
-    driver.close()
     driver.switch_to.window(driver.window_handles[0])
     return title_short, price, rating_and_feedback, product_url
 
 
-def get_product(item_name=''):
+def get_product(item_name='телефон realme 10 черный'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
-    # options = uc.ChromeOptions()
-    driver = uc.Chrome()
-    driver.implicitly_wait(5)
+    options = uc.ChromeOptions()
+    options.add_argument("--incognito")
+    # options.add_argument("--headless=old")
+    options.add_argument("--window-position=-2400,-2400")
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    options.add_argument(f'user-agent={user_agent}')
+    driver = uc.Chrome(options=options)
+    driver.implicitly_wait(3)
     url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
     driver.get(url)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
     # ссылка на товар
-    link = WebDriverWait(driver, 10).until(
+    link = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'tile-hover-target'))
     ).get_attribute('href')
     print('начинается сбор данных')
     product_data = collect_product_data(driver=driver, product_url=link)
-    print(product_data)
     print('сбор данных окончен')
-    driver.close()
     driver.quit()
     return product_data
 
