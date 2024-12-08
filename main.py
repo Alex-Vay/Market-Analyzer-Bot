@@ -153,7 +153,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         for i in range(len(results)):
             subtext = f'<b>Название</b>: {results[i][0]}\n' \
                       f'<b>Цена</b>: {results[i][1]}\n' \
-                      f'<b>Отзывы</b>: {results[i][2]}\n' \
+                      f'<b>Отзывы и рейтинг</b>: {results[i][2]}\n' \
                       f'<a href="{results[i][3]}">ссылка</a>\n\n'
             text += subtext
         keyboard = [
