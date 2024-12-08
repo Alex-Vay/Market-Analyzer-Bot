@@ -1,4 +1,3 @@
-import asyncio
 import concurrent.futures
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
@@ -13,6 +12,8 @@ from dotenv import load_dotenv
 import os
 from parsers.ozon import ozon_parser
 from parsers.wb import wb_parser
+from parsers.yandex import ya_parser
+from parsers.mvideo import mvideo
 
 # Загрузка переменных окружения из .env файла
 load_dotenv()
@@ -20,7 +21,12 @@ load_dotenv()
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
 
-STORES = ['Ozon', 'Wildberries']
+STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo']
+PARSERS = {'Ozon': ozon_parser.get_product,
+           'Wildberries': wb_parser.get_product,
+           'Яндекс Маркет': ya_parser.get_product,
+           'Mvideo': mvideo.get_data_mvideo
+           }
 
 
 # Функция для обработки команды /start
@@ -128,7 +134,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     results = []
     with concurrent.futures.ThreadPoolExecutor() as executor:
         # Создаем задачи для каждого парсера
-        future_to_store = {executor.submit(ozon_parser.get_product if store == 'Ozon' else wb_parser.get_product,
+        future_to_store = {executor.submit(PARSERS.get(store),
                                            product_search): store
                            for store in stores_list}
 
@@ -147,7 +153,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             subtext = f'<b>Название</b>: {results[i][0]}\n' \
                       f'<b>Цена</b>: {results[i][1]}\n' \
                       f'<b>Отзывы</b>: {results[i][2]}\n' \
-                      f'<a href="{results[i][3]}">ссылка</a>'
+                      f'<a href="{results[i][3]}">ссылка</a>\n\n'
             text += subtext
         keyboard = [
             [InlineKeyboardButton("Вернуться в меню", callback_data='start')],

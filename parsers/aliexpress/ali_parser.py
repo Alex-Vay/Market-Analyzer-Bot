@@ -1,7 +1,18 @@
 import aiohttp
 import asyncio
-from config import cookies, headers, json_data
+from config import cookies, headers
 import time
+
+json_data = {
+    'catId': '',
+    'searchText': 'ноутбук lenovo legion',
+    'storeIds': [],
+    'pgChildren': [],
+    'aeBrainIds': [],
+    'searchInfo': '',
+    'searchTrigger': '',
+    'source': 'direct',
+}
 
 
 async def fetch(session, url):
@@ -12,7 +23,6 @@ async def fetch(session, url):
 async def parse(url):
     async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
         data = await fetch(session, url)
-        # soup = BeautifulSoup(html, 'lxml')
         # извлечения данных из soup
         first_product = data['data']['productsFeed']['productsV2'][0]['product']
         url = first_product['productUrl']
@@ -37,3 +47,4 @@ results = asyncio.run(main(urls))
 print(results)
 fn = time.perf_counter()
 print(fn - st)
+

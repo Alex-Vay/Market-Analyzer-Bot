@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-import undetected_chromedriver as uc
+from selenium import webdriver
 
 
 def extract_product_title(soup: BeautifulSoup) -> str:
@@ -35,7 +35,7 @@ def extract_product_rating(soup: BeautifulSoup):
     return 'Рейтинг не найден'
 
 
-def collect_product_data(driver: uc.Chrome, product_url: str):
+def collect_product_data(driver: webdriver.Chrome, product_url: str):
     '''парсинг странички товара'''
     # открытие новой вкладки в браузере
     driver.switch_to.new_window('tab')
@@ -60,16 +60,18 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
 def get_product(item_name='телефон realme 10 черный'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
-    options = uc.ChromeOptions()
-    options.add_argument("--incognito")
-    # options.add_argument("--headless=old")
-    options.add_argument("--window-position=-2400,-2400")
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    # options.add_argument("--incognito")
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
-    driver = uc.Chrome(options=options)
-    driver.implicitly_wait(3)
-    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
+    driver = webdriver.Chrome(options=options)
+    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=price'
     driver.get(url)
+    # pass captcha
+    button = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'reload-button')))
+    button.click()
+    driver.implicitly_wait(3)
     # Ожидание загрузки страницы
     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
     # ссылка на товар

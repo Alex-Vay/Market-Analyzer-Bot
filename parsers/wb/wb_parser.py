@@ -3,6 +3,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
+from selenium import webdriver
 
 
 def extract_product_title(soup: BeautifulSoup) -> str:
@@ -29,13 +30,13 @@ def extract_product_rating(soup: BeautifulSoup):
     return f'Рейтинг {rating_info[0].text}: {rating_info[1].text}'
 
 
-def collect_product_data(driver: uc.Chrome, product_url: str):
+def collect_product_data(driver: webdriver.Chrome, product_url: str):
     '''парсинг странички товара'''
     # открытие новой вкладки в браузере
     driver.switch_to.new_window('tab')
     driver.get(product_url)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'h1')))
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, 'h1')))
     # нужен только тег div с классом "product-page__grid" где вся нужная информация
     product_info_tag_str = driver.find_element(By.CSS_SELECTOR,
                                                "#mainContainer #app .product-page__grid").get_attribute('outerHTML')
@@ -53,15 +54,12 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
 def get_product(item_name='laptop lenovo legion'):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
-    options = uc.ChromeOptions()
-    options.add_argument("--incognito")
-    options.add_argument("--headless=old")
-    options.add_argument("--window-position=-2400,-2400")
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
-    driver = uc.Chrome(options=options)
-    driver.implicitly_wait(3)
-    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=rate'
+    driver = webdriver.Chrome(options=options)
+    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=priceup'
     driver.get(url)
     # Ожидание загрузки страницы
     WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'searchInput')))

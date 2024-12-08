@@ -2,23 +2,22 @@ import bs4
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-import undetected_chromedriver as uc
+from selenium import webdriver
 
-
-# div тег, класс которого начинается с шаблона, а в конце уникальные значения
-# div = driver.find_element(By.CSS_SELECTOR, '[class^="contai"]')
-# так можно див искать по id (*id="/content/page/fancyPage/*)
 
 def get_product(item_name='realme 10'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
-
-    driver = uc.Chrome()
-    driver.implicitly_wait(5)
-    url = f'https://market.yandex.ru/search?text={item_name}'
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument(f'user-agent={user_agent}')
+    driver = webdriver.Chrome(options=options)
+    url = f'https://market.yandex.ru/search?text={item_name}&how=aprice'
     driver.get(url)
+    driver.implicitly_wait(5)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'aside')))
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, 'aside')))
     # прогрутим браузер до первой кнопки 'В корзину', т.к. div тег с товаром не видно
     cart_button = driver.find_element(By.XPATH,
                                       '//button[@aria-label="В корзину" and @data-auto="cartButton" and @type="button"]')
@@ -35,7 +34,6 @@ def get_product(item_name='realme 10'):
     link = f'https://market.yandex.ru/{link}'
     price = soup.find('span', attrs={'data-auto': 'snippet-price-current'}).text
 
-    driver.close()
     driver.quit()
     return title, link, rating, price
 
