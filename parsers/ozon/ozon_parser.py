@@ -1,3 +1,5 @@
+import difflib
+
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -57,6 +59,45 @@ def collect_product_data(driver: webdriver.Chrome, product_url: str):
     return title_short, price, rating_and_feedback, product_url
 
 
+
+def get_product(item_name=''):
+    driver = uc.Chrome()
+    try:
+        driver.implicitly_wait(5)
+        url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
+        driver.get(url)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
+
+        products = driver.find_elements(By.CLASS_NAME, 'tile-hover-target')[:10]
+
+        best_match = None
+        best_ratio = 0
+
+        for product_element in products:
+            try:
+                product_url = product_element.get_attribute('href')
+                product_data = collect_product_data(driver, product_url)
+
+                if product_data:
+                    title, price, rating, url = product_data
+                    sm = difflib.SequenceMatcher(None, item_name.lower(), title.lower())
+                    similarity_ratio = sm.ratio()
+
+                    if similarity_ratio > best_ratio:  # Нашли лучшее совпадение?
+                        best_ratio = similarity_ratio
+                        best_match = product_data
+
+            except Exception as e:
+                print(f"Ошибка при обработке товара: {e}")
+                continue
+
+        return best_match  # Возвращаем лучший вариант, а не первый попавшийся
+
+    finally:
+        driver.quit()
+
+
+
 def get_product(item_name='телефон realme 10 черный'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
@@ -83,6 +124,7 @@ def get_product(item_name='телефон realme 10 черный'):
     print('сбор данных окончен')
     driver.quit()
     return product_data
+
 
 
 if __name__ == '__main__':
