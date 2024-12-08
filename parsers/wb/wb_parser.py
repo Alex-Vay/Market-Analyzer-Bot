@@ -1,12 +1,8 @@
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
-import time
-import re
-from selenium import webdriver
 
 
 def extract_product_title(soup: BeautifulSoup) -> str:
@@ -22,10 +18,10 @@ def extract_product_price(soup: BeautifulSoup):
     return price
 
 
-def extract_product_id(soup: BeautifulSoup):
-    params = soup.find('table', attrs={'class': 'product-params__table'})
-    id = params.find('span', attrs={'id': 'productNmId'}).text
-    return id
+# def extract_product_id(soup: BeautifulSoup):
+#     params = soup.find('table', attrs={'class': 'product-params__table'})
+#     id = params.find('span', attrs={'id': 'productNmId'}).text
+#     return id
 
 
 def extract_product_rating(soup: BeautifulSoup):
@@ -40,13 +36,9 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     driver.get(product_url)
     # Ожидание загрузки страницы
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'h1')))
-    # html код страницы
-    page_source = driver.page_source
     # нужен только тег div с классом "product-page__grid" где вся нужная информация
-    product_info_tag_str = re.search(
-        r'(<div\s+class="product-page__grid"[^>]*>.*</div>)<button class="btn.*К началу страницы</button>',
-        page_source,
-        re.DOTALL).group()
+    product_info_tag_str = driver.find_element(By.CSS_SELECTOR,
+                                               "#mainContainer #app .product-page__grid").get_attribute('outerHTML')
     soup = BeautifulSoup(product_info_tag_str, 'lxml')
     title = extract_product_title(soup)
     price = extract_product_price(soup)
@@ -58,26 +50,28 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
     return title, price, rating, product_url
 
 
-def get_product(item_name='lenovo legion'):
+def get_product(item_name='laptop lenovo legion'):
     '''поиск товара сразу в url
     item_name: товар, который вводит пользователь в боте'''
-    # options = uc.ChromeOptions()
-    driver = uc.Chrome()
-    driver.implicitly_wait(5)
+    options = uc.ChromeOptions()
+    options.add_argument("--incognito")
+    options.add_argument("--headless=old")
+    options.add_argument("--window-position=-2400,-2400")
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    options.add_argument(f'user-agent={user_agent}')
+    driver = uc.Chrome(options=options)
+    driver.implicitly_wait(3)
     url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=rate'
     driver.get(url)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'searchInput')))
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'searchInput')))
     # ссылка на карточку товара
-    link = WebDriverWait(driver, 10).until(
+    link = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CLASS_NAME, 'product-card__wrapper'))
     ).find_element(By.TAG_NAME, 'a').get_attribute('href')
-    print(link)
     print('начинается сбор данных')
     product_data = collect_product_data(driver=driver, product_url=link)
-    print(product_data)
     print('сбор данных окончен')
-    driver.close()
     driver.quit()
     return product_data
 

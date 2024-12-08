@@ -19,7 +19,6 @@ load_dotenv()
 
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
-
 STORES = ['Ozon', 'Wildberries']
 
 

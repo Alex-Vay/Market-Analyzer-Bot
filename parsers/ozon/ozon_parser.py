@@ -1,3 +1,5 @@
+import difflib
+
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -69,26 +71,42 @@ def collect_product_data(driver: uc.Chrome, product_url: str):
 
 
 def get_product(item_name=''):
-    '''поиск товара на главной страничке
-    item_name: товар, который вводит пользователь в боте'''
-    # options = uc.ChromeOptions()
     driver = uc.Chrome()
-    driver.implicitly_wait(5)
-    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
-    driver.get(url)
-    # Ожидание загрузки страницы
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
-    # ссылка на товар
-    link = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CLASS_NAME, 'tile-hover-target'))
-    ).get_attribute('href')
-    print('начинается сбор данных')
-    product_data = collect_product_data(driver=driver, product_url=link)
-    print(product_data)
-    print('сбор данных окончен')
-    driver.close()
-    driver.quit()
-    return product_data
+    try:
+        driver.implicitly_wait(5)
+        url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=rating'
+        driver.get(url)
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'form')))
+
+        products = driver.find_elements(By.CLASS_NAME, 'tile-hover-target')[:10]
+
+        best_match = None
+        best_ratio = 0
+
+        for product_element in products:
+            try:
+                product_url = product_element.get_attribute('href')
+                product_data = collect_product_data(driver, product_url)
+
+                if product_data:
+                    title, price, rating, url = product_data
+                    sm = difflib.SequenceMatcher(None, item_name.lower(), title.lower())
+                    similarity_ratio = sm.ratio()
+
+                    if similarity_ratio > best_ratio:  # Нашли лучшее совпадение?
+                        best_ratio = similarity_ratio
+                        best_match = product_data
+
+            except Exception as e:
+                print(f"Ошибка при обработке товара: {e}")
+                continue
+
+        return best_match  # Возвращаем лучший вариант, а не первый попавшийся
+
+    finally:
+        driver.quit()
+
+
 
 
 if __name__ == '__main__':
