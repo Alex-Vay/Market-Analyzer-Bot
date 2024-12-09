@@ -28,7 +28,7 @@ def get_product(item_name='телефон realme 10 черный'):
     # получаем карточки
     products = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH,
                                                                                     "//div[@id='paginatorContent']//div[@data-index < 10]")))
-    #  атрибут data-index (порядковый номер карточки) как id
+    #  значение атрибута data-index (порядковый номер карточки) как id
     titles_and_urls = {
         int(product.get_attribute('data-index')): product.find_element(
             By.CSS_SELECTOR, '.tile-hover-target .tsBody500Medium').text for product in products}
