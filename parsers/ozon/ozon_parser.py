@@ -56,7 +56,7 @@ def get_product(item_name='телефон realme 10 черный'):
     product_rating_feedback = f"Рейтинг: {rating_feedback[0].text}, {rating_feedback[1].text}"
 
     driver.quit()
-    return product_url, product_title, product_price, product_rating_feedback
+    return product_title, product_price, product_rating_feedback, product_url
 
 
 if __name__ == '__main__':

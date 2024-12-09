@@ -35,7 +35,7 @@ def get_product(item_name='realme 10'):
     price = soup.find('span', attrs={'data-auto': 'snippet-price-current'}).text
 
     driver.quit()
-    return title, link, rating, price
+    return title, price, rating, link
 
 
 if __name__ == '__main__':

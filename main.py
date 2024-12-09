@@ -15,18 +15,19 @@ from parsers.ozon import ozon_parser
 from parsers.wb import wb_parser
 from parsers.yandex import ya_parser
 from parsers.mvideo import mvideo
-
+from parsers.dns import dns_parser
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
 
-STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo']
+STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS']
 PARSERS = {'Ozon': ozon_parser.get_product,
            'Wildberries': wb_parser.get_product,
            'Яндекс Маркет': ya_parser.get_product,
-           'Mvideo': mvideo.get_data_mvideo
+           'Mvideo': mvideo.get_data_mvideo,
+           'DNS': dns_parser.get_product
            }
 
 
