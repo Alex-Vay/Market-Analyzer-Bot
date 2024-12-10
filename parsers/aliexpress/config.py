@@ -1,6 +1,5 @@
-import json
 
-import requests
+from selenium import webdriver
 
 headers = {
     'accept': '*/*',
@@ -17,14 +16,15 @@ headers = {
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
 }
-
-
-cookies = requests.get('https://aliexpress.ru/aer-jsonapi/v2/cart/count', headers=headers).cookies
-print(cookies)
-
-
-
+user_agent = headers['user-agent']
+options = webdriver.ChromeOptions()
+options.add_argument(f'user-agent={user_agent}')
+driver = webdriver.Chrome()
+driver.get('https://aliexpress.ru')
+row_cookies = driver.get_cookies()
+driver.quit()
+cookies = {row['name']: row['value'] for row in row_cookies}
 
 

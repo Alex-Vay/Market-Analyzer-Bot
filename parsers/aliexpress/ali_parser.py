@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import config
 from config import cookies, headers
 import time
 
@@ -20,31 +21,36 @@ async def fetch(session, url):
         return await response.json()
 
 
-async def parse(url):
+async def parse():
     async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
+        url = 'https://aliexpress.ru/aer-webapi/v1/search'
         data = await fetch(session, url)
-        # извлечения данных из soup
         first_product = data['data']['productsFeed']['productsV2'][0]['product']
         url = first_product['productUrl']
         title = first_product['productTitle']
         price, currency = first_product['rawFinalPrice']['amount'], first_product['rawFinalPrice']['currency']
         rating = first_product.get('rating', '')
         sales = first_product.get('sales', '')
-        return url, title, price, currency, rating, sales
+        rating_and_sales = f'Рейтинг {rating}, {sales} продано'
+        formatted_price = "{:,}".format(price).replace(",", " ")
+        print_and_currency = price + currency
+        return title, formatted_price, print_and_currency, rating_and_sales, url
 
 
-async def main(urls):
-    tasks = [parse(url) for url in urls]
-    results = await asyncio.gather(*tasks)
-    return results
+async def get_product(item_name):
+    json_data['searchText'] = item_name
+    task = parse()
+    results = await asyncio.gather(task)
+    return results[0]
 
 
-st = time.perf_counter()
-urls = [
-    'https://aliexpress.ru/aer-webapi/v1/search',
-]
-results = asyncio.run(main(urls))
-print(results)
-fn = time.perf_counter()
-print(fn - st)
+if __name__ == '__main__':
+    st = time.perf_counter()
+    urls = [
+        'https://aliexpress.ru/aer-webapi/v1/search',
+    ]
+    results = asyncio.run(get_product('honor magicbook 15'))
+    print(results)
+    fn = time.perf_counter()
+    print(fn - st)
 
