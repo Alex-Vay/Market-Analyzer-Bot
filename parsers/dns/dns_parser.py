@@ -28,7 +28,7 @@ def get_product_title_and_url(soup):
 
 
 def extract_data(soup: BeautifulSoup):
-    product_url, product_title = get_product_title_and_url(soup)
+    product_title, product_url = get_product_title_and_url(soup)
     product_price = get_product_price(soup)
     product_rating_feedback_str = get_product_rating_and_feedback(soup)
     return product_title, product_price, product_rating_feedback_str, product_url
@@ -36,12 +36,16 @@ def extract_data(soup: BeautifulSoup):
 
 def get_product(item_name=""):
     options = uc.ChromeOptions()
-    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'  # chrome
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
 
     options.add_argument(f'user-agent={user_agent}')
     driver = uc.Chrome(options=options)
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
+
     css_selector = "#search-results .products-list__content .catalog-product"
+    # прокрутка до элемента, т.к. он может быть ниже
+    # element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
+    driver.execute_script("window.scrollTo(0, 1500)")
     # подождем пока дозагрузится цена
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy .product-buy__price')))
@@ -54,4 +58,4 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    print(get_product('realme 9'))
+    print(get_product('honor magicbook 15'))
