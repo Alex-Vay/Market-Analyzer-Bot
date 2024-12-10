@@ -1,11 +1,11 @@
+import re
+
 import requests
 from parsers.mvideo.config import headers, cookies
 import os
 
 
 def get_data_mvideo(ids):
-    if not os.path.exists('data'):
-        os.mkdir('data')
     params = {
         'offset': '0',
         # 'filterParams': 'WyJ0b2xrby12LW5hbGljaGlpIiwiLTEyIiwiZGEiXQ==',
@@ -13,7 +13,7 @@ def get_data_mvideo(ids):
         'limit': '24',
         'query': f'{ids}',
         # 'context': 'v2dzaG9wX2lkZFMwMDJhcXXQvdC+0YPRgtCx0YPQuiBsZW5vdm9sY2F0ZWdvcnlfaWRzn///',
-        'sort' : 'price_asc',
+        # 'sort' : 'price_asc',
     }
     session = requests.Session()
     try:
@@ -41,10 +41,10 @@ def get_data_mvideo(ids):
                     if price['productId'] == product_id:
                         truePriceObject = price
                 # item_base_price = truePriceObject['price']['basePrice']
-                item_current_price = truePriceObject['price']['salePrice']
+                item_current_price = str(truePriceObject['price']['salePrice'])
                 rating = product['rating']
-                rating_and_feedback = f"Отзывов: {rating['count']}, рейтинг: {round(rating['star'], 2)}"
-                return product['name'], item_current_price, rating_and_feedback, link
+                rating_and_feedback = f"Отзывов: {rating['count']}, рейтинг: {rating['star']}"
+                return product['name'], re.sub("[^0-9]", "", item_current_price), rating_and_feedback, link
 
         else:
             print(f'[!] Skipped')

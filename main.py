@@ -16,20 +16,21 @@ from parsers.wb import wb_parser
 from parsers.yandex import ya_parser
 from parsers.mvideo import mvideo
 from parsers.dns import dns_parser
-from parsers.aliexpress import ali_parser
+# from parsers.aliexpress import ali_parser
+
 # Загрузка переменных окружения из .env файла
 load_dotenv()
 
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
 
-STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS', 'AliExpress']
+STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS'] #'AliExpress'
 PARSERS = {'Ozon': ozon_parser.get_product,
            'Wildberries': wb_parser.get_product,
            'Яндекс Маркет': ya_parser.get_product,
            'Mvideo': mvideo.get_data_mvideo,
            'DNS': dns_parser.get_product,
-           'AliExpress': ali_parser.get_product
+           # 'AliExpress': ali_parser.get_product
            }
 
 
@@ -136,7 +137,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     product_search = context.user_data.pop('product_info', '')
     stores_list = context.user_data.get('stores_list', [])
     results = []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         # Создаем задачи для каждого парсера
         future_to_store = {executor.submit(PARSERS.get(store),
                                            product_search): store
@@ -153,11 +154,15 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
         # Отправка результатов пользователю
         text = ""
-        for i in range(len(results)):
-            subtext = f'<b>Название</b>: {results[i][0]}\n' \
-                      f'<b>Цена</b>: {results[i][1]}\n' \
-                      f'<b>Отзывы и рейтинг</b>: {results[i][2]}\n' \
-                      f'<a href="{results[i][3]}">ссылка</a>\n\n'
+        results = filter(lambda x: x is not None, results)
+        for product in sorted(results, key=lambda x: int(x[1])):
+            try:
+                subtext = f'<b>Название</b>: {product[0]}\n' \
+                      f'<b>Цена</b>: {product[1]} P\n' \
+                      f'<b>Отзывы и рейтинг</b>: {product[2]}\n' \
+                      f'<a href="{product[3]}">ссылка</a>\n\n'
+            except:
+                continue
             text += subtext
         keyboard = [
             [InlineKeyboardButton("Вернуться в меню", callback_data='start')],

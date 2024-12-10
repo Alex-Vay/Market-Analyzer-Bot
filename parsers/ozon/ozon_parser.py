@@ -1,21 +1,24 @@
 import difflib
+import re
+
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
+import undetected_chromedriver as uc
 
 
 def get_product(item_name='телефон realme 10 черный'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
-    # options.add_argument("--incognito")
+
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
-    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true&sorting=price'
+    url = f'https://www.ozon.ru/search/?text={item_name}&from_global=true' #&sorting=price
     driver.get(url)
     # pass captcha
     button = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.ID, 'reload-button')))
@@ -47,21 +50,21 @@ def get_product(item_name='телефон realme 10 черный'):
         except Exception as e:
             print(f"Ошибка при обработке товара: {e}")
             continue
-    driver.quit()
     product_card = products[best_match_index]
     soup = BeautifulSoup(product_card.get_attribute('outerHTML'), 'lxml')
-    product_url = soup.find('a', attrs={'class': 'tile-hover-target'}).get('href')
+    product_url = "https://www.ozon.ru" + soup.find('a', attrs={'class': 'tile-hover-target'}).get('href')
     product_title = titles_and_urls[best_match_index]
     product_price = soup.find('span', attrs={'class': 'tsHeadline500Medium'}).text
-    rating_feedback = soup.find('div', attrs={'class': 'tsBodyMBold'}).find_all('span', attrs={'q1'})
-    if rating_feedback[0].text and rating_feedback[1].text:
+    try:
+        rating_feedback = soup.find('div', attrs={'class': 'tsBodyMBold'}).find_all('span', attrs={'q1'})
         product_rating_feedback = f"Рейтинг: {rating_feedback[0].text}, {rating_feedback[1].text}"
-    else:
+    except:
         product_rating_feedback = f"Рейтинг: отсутствует"
-    return product_title, product_price, product_rating_feedback, product_url
+    driver.quit()
+    return product_title, re.sub("[^0-9]", "", product_price), product_rating_feedback, product_url
 
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product())
+    print(get_product("ноутбук Lenovo"))
     print('Поиск завершен.')

@@ -1,3 +1,5 @@
+import re
+
 import bs4
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -10,10 +12,10 @@ def get_product(item_name='realme 10'):
     item_name: товар, который вводит пользователь в боте'''
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
-    url = f'https://market.yandex.ru/search?text={item_name}&how=aprice'
+    url = f'https://market.yandex.ru/search?text={item_name}' #&how=aprice
     driver.get(url)
     driver.implicitly_wait(5)
     # Ожидание загрузки страницы
@@ -35,7 +37,7 @@ def get_product(item_name='realme 10'):
     price = soup.find('span', attrs={'data-auto': 'snippet-price-current'}).text
 
     driver.quit()
-    return title, price, rating, link
+    return title, re.sub("[^0-9]", "", price), rating, link
 
 
 if __name__ == '__main__':

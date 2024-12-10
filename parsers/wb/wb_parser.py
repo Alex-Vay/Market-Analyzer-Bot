@@ -1,4 +1,6 @@
 import difflib
+import re
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -46,7 +48,7 @@ def extract_product_url(product_element):
 def get_product(item_name='', num_products_to_check=15):
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
     url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}'
@@ -80,13 +82,13 @@ def get_product(item_name='', num_products_to_check=15):
         product_rating = extract_product_rating(best_match)
         product_url = extract_product_url(best_match)
         driver.quit()
-        return product_url, product_title, product_price, product_rating
+        return product_title, re.sub("[^0-9]", "", product_price), product_rating, product_url
     else:
         driver.quit()
-        return None, None, None, None
+        return None
 
 
-if name == 'main':
+if __name__ == '__main__':
     print('Поиск товара...')
     result = get_product('ноутбук lenovo legion 7')
     if result[0]:

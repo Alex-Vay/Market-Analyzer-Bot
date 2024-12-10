@@ -1,3 +1,5 @@
+import re
+
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 from selenium.webdriver.support.ui import WebDriverWait
@@ -31,7 +33,7 @@ def extract_data(soup: BeautifulSoup):
     product_title, product_url = get_product_title_and_url(soup)
     product_price = get_product_price(soup)
     product_rating_feedback_str = get_product_rating_and_feedback(soup)
-    return product_title, product_price, product_rating_feedback_str, product_url
+    return product_title, re.sub("[^0-9]", "", product_price), product_rating_feedback_str, product_url
 
 
 def get_product(item_name=""):
