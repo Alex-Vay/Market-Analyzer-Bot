@@ -15,7 +15,7 @@ def get_rating(rating_tag_object):
     return rating_str
 
 
-def get_product(item_name='realme 10 черный'):
+def get_product(item_name='носки белые nike длинные'):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
@@ -27,15 +27,16 @@ def get_product(item_name='realme 10 черный'):
     driver.get(url)
     driver.implicitly_wait(5)
     # Ожидание загрузки страницы
-    WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, '#ServerLayoutRenderer ._1H-VK ._1ENFO .ds-visuallyHidden')))
+    selector_wdwait = '#SerpStatic #ServerLayoutRenderer ._1H-VK ._1ENFO .ds-visuallyHidden'
+    WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector_wdwait)))
     # прогрутим браузер до первой кнопки 'В корзину', т.к. div тег с товаром не видно
+    selector_cart_button = '//button[@aria-label="В корзину" and @data-auto="cartButton" and @type="button"]'
     cart_button = driver.find_element(By.XPATH,
-                                      '//button[@aria-label="В корзину" and @data-auto="cartButton" and @type="button"]')
+                                      selector_cart_button)
     driver.execute_script("return arguments[0].scrollIntoView(true);", cart_button)
     # div тег где находится информация о товаре
-    div_product = driver.find_element(By.CSS_SELECTOR,
-                                      'div[data-auto-themename="listDetailed"] div._1H-VK').get_attribute('outerHTML')
+    selector_div_product = '#SerpStatic #ServerLayoutRenderer article[data-auto="searchOrganic"] div._1H-VK'
+    div_product = driver.find_element(By.CSS_SELECTOR, selector_div_product).get_attribute('outerHTML')
     soup = bs4.BeautifulSoup(div_product, 'lxml')
     description = soup.find('div', attrs={'class': '_1ENFO'})
 
