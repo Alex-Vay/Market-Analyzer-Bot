@@ -76,5 +76,5 @@ def get_product(item_name='телефон realme 10 черный'):
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product("realme 12"))
+    print(get_product("носки белые nike"))
     print('Поиск завершен.')

@@ -1,56 +1,66 @@
-import aiohttp
-import asyncio
-import config
-from config import cookies, headers
-import time
-
-json_data = {
-    'catId': '',
-    'searchText': 'ноутбук lenovo legion',
-    'storeIds': [],
-    'pgChildren': [],
-    'aeBrainIds': [],
-    'searchInfo': '',
-    'searchTrigger': '',
-    'source': 'direct',
-}
+import re
+import undetected_chromedriver as uc
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
 
-async def fetch(session, url):
-    async with session.post(url, json=json_data) as response:
-        return await response.json()
+def get_product_price(product_soup):
+    price_all = product_soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__price')})
+    new_price = price_all.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__priceNew')}).text
+    return new_price
 
 
-async def parse():
-    async with aiohttp.ClientSession(cookies=cookies, headers=headers) as session:
-        url = 'https://aliexpress.ru/aer-webapi/v1/search'
-        data = await fetch(session, url)
-        first_product = data['data']['productsFeed']['productsV2'][0]['product']
-        url = first_product['productUrl']
-        title = first_product['productTitle']
-        price, currency = first_product['rawFinalPrice']['amount'], first_product['rawFinalPrice']['currency']
-        rating = first_product.get('rating', '')
-        sales = first_product.get('sales', '')
-        rating_and_sales = f'Рейтинг {rating}, {sales} продано'
-        formatted_price = "{:,}".format(price).replace(",", " ")
-        print_and_currency = price + currency
-        return title, formatted_price, print_and_currency, rating_and_sales, url
+def get_product_rating(product_soup):
+    title_and_rating = product_soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
+    rating_and_feedback_span = title_and_rating.find('div', attrs={
+        'class': re.compile('^red-snippet_RedSnippet__trust')}).find_all('span')
+    return f"Рейтинг: {rating_and_feedback_span[0].text}, {rating_and_feedback_span[1].text}"
 
 
-async def get_product(item_name):
-    json_data['searchText'] = item_name
-    task = parse()
-    results = await asyncio.gather(task)
-    return results[0]
+def get_product(item_name=""):
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'  # chrome
+    options = uc.ChromeOptions()
+    # options.add_argument("--headless")
+    # options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    # options.add_experimental_option('useAutomationExtension', False)
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument(f'user-agent={user_agent}')
+    # чтобы не ждать полностью загрузку страницы
+    # caps = DesiredCapabilities().CHROME
+    # caps["pageLoadStrategy"] = "none"  # interactive
+    driver = uc.Chrome(options=options,
+                       # desired_capabilities=caps
+                       )
+
+    driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
+        'source': '''
+            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+            delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
+      '''
+    })
+    search_text = item_name.replace(' ', '+')
+    url = f'https://aliexpress.ru/wholesale?SearchText={search_text}&g=y&page=1'  # &sorting=price
+    driver.get(url)
+
+    css_selector = "#__aer_root__ div[class^='SnowSearchWrap_SnowSearchWrap__content'] div[class^='red-snippet_RedSnippet__grid'] div[data-index='0']"
+    element = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
+    soup = BeautifulSoup(element.get_attribute('outerHTML'), 'lxml')
+    product_info = soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__contentWithAside')}).find('a')
+    product_url = 'https://' + product_info.get('href')
+    product_price = get_product_price(product_info)
+    title_and_rating = product_info.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
+    rating_and_feedback = get_product_rating(product_info)
+    product_title = title_and_rating.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__title')}).text
+    driver.quit()
+    return product_title, product_price, rating_and_feedback, product_url
 
 
 if __name__ == '__main__':
-    st = time.perf_counter()
-    urls = [
-        'https://aliexpress.ru/aer-webapi/v1/search',
-    ]
-    results = asyncio.run(get_product('honor magicbook 15'))
-    print(results)
-    fn = time.perf_counter()
-    print(fn - st)
-
+    print(get_product('honor magicbook 16'))
