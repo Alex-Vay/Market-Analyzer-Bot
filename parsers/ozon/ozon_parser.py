@@ -71,7 +71,7 @@ def get_product(item_name='телефон realme 10 черный'):
     rating_data = soup.find('div', attrs={'class': 'tsBodyMBold'})
     product_rating_feedback = get_rating(rating_data)
     driver.quit()
-    return product_title, re.sub("[^0-9]", "", product_price) + '₽', product_rating_feedback, product_url
+    return product_title, re.sub("[^0-9]", "", product_price), product_rating_feedback, product_url
 
 
 if __name__ == '__main__':

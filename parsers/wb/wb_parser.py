@@ -1,4 +1,6 @@
 import difflib
+import re
+
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -49,7 +51,7 @@ def get_product(item_name):
     # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
-    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=priceup'
+    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}'
     driver.get(url)
     # Ожидание загрузки страницы
     wait_selector = '#app #catalog .catalog-page__content .product-card .product-card__wrapper .product-card__rating-wrap'
@@ -72,7 +74,7 @@ def get_product(item_name):
     product_title, product_price = get_title_and_price(soup)
     product_rating_sales = get_rating_and_sales(soup)
     driver.quit()
-    return product_title, product_price, product_rating_sales, product_link,
+    return product_title, re.sub("[^0-9]", "", product_price), product_rating_sales, product_link,
 
 
 if __name__ == '__main__':
