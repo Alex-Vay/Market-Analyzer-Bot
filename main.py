@@ -16,6 +16,7 @@ from parsers.wb import wb_parser
 from parsers.yandex import ya_parser
 from parsers.mvideo import mvideo
 from parsers.dns import dns_parser
+
 # from parsers.aliexpress import ali_parser
 
 # Загрузка переменных окружения из .env файла
@@ -24,7 +25,7 @@ load_dotenv()
 # Access environment variables as if they came from the actual environment
 TOKEN = os.getenv('TOKEN')
 
-STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS'] #'AliExpress'
+STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS']  # 'AliExpress'
 PARSERS = {'Ozon': ozon_parser.get_product,
            'Wildberries': wb_parser.get_product,
            'Яндекс Маркет': ya_parser.get_product,
@@ -156,13 +157,10 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         text = ""
         results = filter(lambda x: x is not None, results)
         for product in sorted(results, key=lambda x: int(x[1])):
-            try:
-                subtext = f'<b>Название</b>: {product[0]}\n' \
-                      f'<b>Цена</b>: {product[1]} P\n' \
-                      f'<b>Отзывы и рейтинг</b>: {product[2]}\n' \
-                      f'<a href="{product[3]}">ссылка</a>\n\n'
-            except:
-                continue
+            subtext = f'<a href="{product[3]}">{product[0]}</a>\n' \
+                      f'<b>Цена (₽)</b>: {product[1]}\n' \
+                      f'<b>Отзывы и рейтинг</b>: {product[2]}\n\n'
+
             text += subtext
         keyboard = [
             [InlineKeyboardButton("Вернуться в меню", callback_data='start')],
@@ -170,7 +168,9 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             [InlineKeyboardButton("Выбрать другой маркетплейс(ы) и товар", callback_data='enter_again')],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.callback_query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='html')
+        await update.callback_query.edit_message_text(text=text,
+                                                      reply_markup=reply_markup,
+                                                      parse_mode='html')
 
 
 # Основная функция для обработки нажатий на кнопки

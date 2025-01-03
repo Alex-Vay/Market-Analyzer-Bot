@@ -8,11 +8,9 @@ import os
 def get_data_mvideo(ids):
     params = {
         'offset': '0',
-        # 'filterParams': 'WyJ0b2xrby12LW5hbGljaGlpIiwiLTEyIiwiZGEiXQ==',
         'doTranslit': 'true',
         'limit': '24',
         'query': f'{ids}',
-        # 'context': 'v2dzaG9wX2lkZFMwMDJhcXXQvdC+0YPRgtCx0YPQuiBsZW5vdm9sY2F0ZWdvcnlfaWRzn///',
         # 'sort' : 'price_asc',
     }
     session = requests.Session()
@@ -40,11 +38,12 @@ def get_data_mvideo(ids):
                 for price in material_prices:
                     if price['productId'] == product_id:
                         truePriceObject = price
-                # item_base_price = truePriceObject['price']['basePrice']
                 item_current_price = str(truePriceObject['price']['salePrice'])
                 rating = product['rating']
-                rating_and_feedback = f"Отзывов: {rating['count']}, рейтинг: {rating['star']}"
-                return product['name'], re.sub("[^0-9]", "", item_current_price), rating_and_feedback, link
+                rating_count_sales_str = rating.get('count') if rating.get('count') is not None else 'нет'
+                rating_star_str = round(rating.get('star'), 2) if rating.get('star') is not None else 'отсутствует'
+                rating_and_feedback = f"Отзывов - {rating_count_sales_str}, рейтинг {rating_star_str}"
+                return product['name'], re.sub("\D", "", item_current_price), rating_and_feedback, link
 
         else:
             print(f'[!] Skipped')

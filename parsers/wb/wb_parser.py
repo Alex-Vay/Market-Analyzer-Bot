@@ -1,4 +1,5 @@
 import difflib
+import re
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -27,18 +28,18 @@ def smart_function(searched_title: str, index_and_titles: dict):
 def get_rating_and_sales(soup_object: BeautifulSoup):
     rating_sales_data = soup_object.find('div', attrs={'class': 'product-card__bottom-wrap'}).find('p', attrs={
         'class': 'product-card__rating-wrap'}).find_all('span')
-    rating = rating_sales_data[0].text if rating_sales_data[0].text else 'Отсутствует'
-    return f"Рейтинг: {rating}. {rating_sales_data[1].text}"
+    rating = rating_sales_data[0].text if rating_sales_data[0].text else 'отсутствует'
+    return f"рейтинг {rating}. {rating_sales_data[1].text}"
 
 
 def get_title_and_price(soup_object: BeautifulSoup):
     title_and_price = soup_object.find('div', attrs={'class': 'product-card__middle-wrap'})
     product_price = title_and_price.find('div', attrs={'class': 'product-card__price'}).find('ins')
-    product_price = product_price.text.replace('\xa0', '')
+    product_price = product_price.text
     product_title = title_and_price.find('h2', attrs={'class': 'product-card__brand-wrap'}).find('span', attrs={
         "class": 'product-card__name'}).text
     product_title = product_title.strip(' \/')
-    return product_title, product_price
+    return product_title, re.sub(r"\D", "", product_price)
 
 
 def get_product(item_name):
@@ -49,13 +50,14 @@ def get_product(item_name):
     # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
-    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}&sort=priceup'
+    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}'
+    driver.set_window_position(-2400, -2400)
     driver.get(url)
     # Ожидание загрузки страницы
     wait_selector = '#app #catalog .catalog-page__content .product-card .product-card__wrapper .product-card__rating-wrap'
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)))
     # ссылка на карточку товара
-    cards_count = 3
+    cards_count = 1
     xpath_selector = f'//div[@id="catalog"]//div[@class="catalog-page__content"]//article[@data-card-index < {cards_count}]'
     product_cards = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH, xpath_selector))
@@ -72,10 +74,10 @@ def get_product(item_name):
     product_title, product_price = get_title_and_price(soup)
     product_rating_sales = get_rating_and_sales(soup)
     driver.quit()
-    return product_title, product_price, product_rating_sales, product_link,
+    return product_title, product_price, product_rating_sales, product_link
 
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product('процессор ryzen'))
+    print(get_product('процессор i5 12400f материнская плата'))
     print('Поиск завершен.')
