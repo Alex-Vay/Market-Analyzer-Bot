@@ -1,4 +1,6 @@
 import re
+import time
+
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -28,8 +30,9 @@ def get_product(item_name=""):
     # options.add_argument("--headless")
     # options.add_experimental_option("excludeSwitches", ["enable-automation"])
     # options.add_experimental_option('useAutomationExtension', False)
-    options.add_argument("--disable-blink-features=AutomationControlled")
+    # options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument(f'user-agent={user_agent}')
+    options.page_load_strategy = 'none'
     # чтобы не ждать полностью загрузку страницы
     # caps = DesiredCapabilities().CHROME
     # caps["pageLoadStrategy"] = "none"  # interactive
@@ -47,10 +50,11 @@ def get_product(item_name=""):
     search_text = item_name.replace(' ', '+')
     url = f'https://aliexpress.ru/wholesale?SearchText={search_text}&g=y&page=1'  # &sorting=price
     driver.get(url)
-
+    time.sleep(25)
     css_selector = "#__aer_root__ div[class^='SnowSearchWrap_SnowSearchWrap__content'] div[class^='red-snippet_RedSnippet__grid'] div[data-index='0']"
-    element = WebDriverWait(driver, 5).until(
+    element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
+    driver.execute_script("window.stop();")
     soup = BeautifulSoup(element.get_attribute('outerHTML'), 'lxml')
     product_info = soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__contentWithAside')}).find('a')
     product_url = 'https://' + product_info.get('href')
@@ -59,8 +63,8 @@ def get_product(item_name=""):
     rating_and_feedback = get_product_rating(product_info)
     product_title = title_and_rating.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__title')}).text
     driver.quit()
-    return product_title, product_price, rating_and_feedback, product_url
+    return product_title, re.sub("[^0-9]", "", product_price), rating_and_feedback, product_url
 
 
 if __name__ == '__main__':
-    print(get_product('honor magicbook 16'))
+    print(get_product('legion 7 pro'))

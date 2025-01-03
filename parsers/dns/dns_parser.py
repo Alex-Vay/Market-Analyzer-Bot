@@ -1,5 +1,7 @@
 import re
+import time
 
+import requests
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 from selenium.common import TimeoutException
@@ -40,34 +42,36 @@ def extract_data(soup: BeautifulSoup):
 def get_product(item_name=""):
     options = uc.ChromeOptions()
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
-
     options.add_argument(f'user-agent={user_agent}')
+    options.page_load_strategy = 'none'
     driver = uc.Chrome(options=options)
-
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
-
-        css_selector = "#search-results .products-list__content .catalog-product"
+        css_selector = ".products-list__content .catalog-product"
         # прокрутка до элемента, т.к. он может быть ниже
         # element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
         # driver.execute_script("window.scrollTo(0, 1500)")
         # подождем пока дозагрузится цена
-        WebDriverWait(driver, 3).until(
+        time.sleep(25)
+        print(driver.current_url)
+        WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
         element = driver.find_element(By.CSS_SELECTOR, css_selector)
         driver.execute_script("arguments[0].scrollIntoView();", element)
 
-        product_div = WebDriverWait(driver, 3).until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        product_div = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        driver.execute_script("window.stop();")
         product_div_source = product_div.get_attribute('outerHTML')
         soup = BeautifulSoup(product_div_source, 'lxml')
         extracted_data = extract_data(soup)
+        driver.quit()
         return extracted_data
     except TimeoutException:
-        return 'Ничего не найдено'
+        return None
     finally:
         driver.quit()
 
 
 if __name__ == '__main__':
-    print(get_product('realme 12'))
+    print(get_product('legion 7 pro'))
