@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
+from parsers.output_model import ProductOutput
 
 
 def smart_function(searched_title: str, index_and_titles: dict):
@@ -74,7 +75,11 @@ def get_product(item_name):
     product_title, product_price = get_title_and_price(soup)
     product_rating_sales = get_rating_and_sales(soup)
     driver.quit()
-    return product_title, product_price, product_rating_sales, product_link
+    return ProductOutput(shop_name='Wildberries',
+                         title=product_title,
+                         price=product_price,
+                         rating_info=product_rating_sales,
+                         link=product_link)
 
 
 if __name__ == '__main__':

@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
+from parsers.output_model import ProductOutput
 
 
 def get_rating(rating_object):
@@ -71,8 +72,13 @@ def get_product(item_name: str):
     product_price = soup.find('span', attrs={'class': 'tsHeadline500Medium'}).text
     rating_data = soup.find('div', attrs={'class': 'tsBodyMBold'})
     product_rating_feedback = get_rating(rating_data)
+    price = re.sub(r"\D", "", product_price)
     driver.quit()
-    return product_title, re.sub(r"\D", "", product_price), product_rating_feedback, product_url
+    return ProductOutput(shop_name='Ozon',
+                         title=product_title,
+                         price=price,
+                         rating_info=product_rating_feedback,
+                         link=product_url)
 
 
 if __name__ == '__main__':

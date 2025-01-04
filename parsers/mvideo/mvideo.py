@@ -1,7 +1,7 @@
 import re
-
 import requests
 from parsers.mvideo.config import headers, cookies
+from parsers.output_model import ProductOutput
 import os
 
 
@@ -39,11 +39,16 @@ def get_data_mvideo(ids):
                     if price['productId'] == product_id:
                         truePriceObject = price
                 item_current_price = str(truePriceObject['price']['salePrice'])
+                price = re.sub(r"\D", "", item_current_price)
                 rating = product['rating']
                 rating_count_sales_str = rating.get('count') if rating.get('count') is not None else 'нет'
                 rating_star_str = round(rating.get('star'), 2) if rating.get('star') is not None else 'отсутствует'
-                rating_and_feedback = f"Отзывов - {rating_count_sales_str}, рейтинг {rating_star_str}"
-                return product['name'], re.sub("\D", "", item_current_price), rating_and_feedback, link
+                rating_and_feedback = f"отзывов {rating_count_sales_str}, рейтинг {rating_star_str}"
+                return ProductOutput(shop_name='М.Видео',
+                                     title=product['name'],
+                                     price=price,
+                                     rating_info=rating_and_feedback,
+                                     link=link)
 
         else:
             print(f'[!] Skipped')

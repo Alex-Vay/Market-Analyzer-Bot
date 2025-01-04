@@ -1,14 +1,11 @@
 import re
 import time
-
 import undetected_chromedriver as uc
 from bs4 import BeautifulSoup
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from parsers.output_model import ProductOutput
 
 
 def get_product_price(product_soup):
@@ -21,25 +18,21 @@ def get_product_rating(product_soup):
     title_and_rating = product_soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
     rating_and_feedback_span = title_and_rating.find('div', attrs={
         'class': re.compile('^red-snippet_RedSnippet__trust')}).find_all('span')
-    return f"Рейтинг: {rating_and_feedback_span[0].text}, {rating_and_feedback_span[1].text}"
+    if len(rating_and_feedback_span) > 1:
+        return f"рейтинг {rating_and_feedback_span[0].text}, {rating_and_feedback_span[1].text}"
+    return f"рейтинг отсутствует"
 
 
 def get_product(item_name=""):
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'  # chrome
     options = uc.ChromeOptions()
     # options.add_argument("--headless")
-    # options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    # options.add_experimental_option('useAutomationExtension', False)
-    # options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_argument(f'user-agent={user_agent}')
     options.page_load_strategy = 'none'
-    # чтобы не ждать полностью загрузку страницы
-    # caps = DesiredCapabilities().CHROME
-    # caps["pageLoadStrategy"] = "none"  # interactive
     driver = uc.Chrome(options=options,
                        # desired_capabilities=caps
                        )
-
+    # driver.set_window_position(-2400, -2400)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         'source': '''
             delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
@@ -62,9 +55,14 @@ def get_product(item_name=""):
     title_and_rating = product_info.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
     rating_and_feedback = get_product_rating(product_info)
     product_title = title_and_rating.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__title')}).text
+    price = re.sub(r"\D", "", product_price)
     driver.quit()
-    return product_title, re.sub("[^0-9]", "", product_price), rating_and_feedback, product_url
+    return ProductOutput(shop_name='Алиэкспресс',
+                         title=product_title,
+                         price=price,
+                         rating_info=rating_and_feedback,
+                         link=product_url)
 
 
 if __name__ == '__main__':
-    print(get_product('legion 7 pro'))
+    print(get_product('realme 12'))

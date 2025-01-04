@@ -8,20 +8,27 @@ from selenium.common import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from parsers.output_model import ProductOutput
 
 
 def get_product_price(soup):
-    product_price = soup.find('div', attrs={'class': 'product-buy'}).find('div', attrs={
-        'class': 'product-buy__price-wrap'}).find('div', attrs={'class': 'product-buy__price'}).contents[0].strip()
-    return product_price
+    try:
+        product_price = soup.find('div', attrs={'class': 'product-buy'}).find('div', attrs={
+            'class': 'product-buy__price-wrap'}).find('div', attrs={'class': 'product-buy__price'}).contents[0].strip()
+        return product_price
+    except:
+        return None
 
 
 def get_product_rating_and_feedback(soup):
     product_rating_feedback = soup.find('div', attrs={'class': 'catalog-product__stat'}).find('a', attrs={
         'class': 'catalog-product__rating'})
-    product_rating = product_rating_feedback.get('data-rating')
-    product_feedback = product_rating_feedback.text
-    product_rating_feedback_str = f"Рейтинг: {product_rating}, отзывы: {product_feedback}"
+    product_rating_feedback_text = product_rating_feedback.text
+    if 'нет' in product_rating_feedback_text or product_rating_feedback_text is None:
+        product_rating, product_feedback = 'отсутствует', '0 отзывов'
+    else:
+        product_rating, product_feedback = product_rating_feedback_text.split('|')
+    product_rating_feedback_str = f"рейтинг {product_rating.strip()}, {product_feedback}"
     return product_rating_feedback_str
 
 
@@ -36,7 +43,12 @@ def extract_data(soup: BeautifulSoup):
     product_title, product_url = get_product_title_and_url(soup)
     product_price = get_product_price(soup)
     product_rating_feedback_str = get_product_rating_and_feedback(soup)
-    return product_title, re.sub("[^0-9]", "", product_price), product_rating_feedback_str, product_url
+    price = re.sub(r"\D", "", product_price)
+    return ProductOutput(shop_name='DNS',
+                         title=product_title,
+                         price=price,
+                         rating_info=product_rating_feedback_str,
+                         link=product_url)
 
 
 def get_product(item_name=""):
@@ -45,6 +57,7 @@ def get_product(item_name=""):
     options.add_argument(f'user-agent={user_agent}')
     options.page_load_strategy = 'none'
     driver = uc.Chrome(options=options)
+    driver.set_window_position(-2400, -2400)
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"

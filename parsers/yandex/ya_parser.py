@@ -4,18 +4,19 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
-
+from parsers.output_model import ProductOutput
 
 def get_rating(rating_tag_object):
     if rating_tag_object:
         rating_and_feedback = rating_tag_object.find_all('span', limit=2)
-        rating_str = f"{rating_and_feedback[0].text}, {rating_and_feedback[1].text}"
+        rate_str = re.sub(r'\sиз\s\d', '', rating_and_feedback[0].text.lower())
+        rating_str = f"{rate_str.replace(':', '')}, {rating_and_feedback[1].text.replace('на основе ', '')}"
     else:
-        rating_str = 'Рейтинг отсутствует'
+        rating_str = 'рейтинг отсутствует'
     return rating_str
 
 
-def get_product(item_name='носки белые nike длинные'):
+def get_product(item_name):
     '''поиск товара на главной страничке
     item_name: товар, который вводит пользователь в боте'''
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'  # chrome
@@ -23,6 +24,7 @@ def get_product(item_name='носки белые nike длинные'):
     # options.add_argument('--headless')
     options.add_argument(f'user-agent={user_agent}')
     driver = uc.Chrome(options=options)
+    driver.set_window_position(-2400, -2400)
     url = f'https://market.yandex.ru/search?text={item_name}'  # &how=aprice
     driver.get(url)
     driver.implicitly_wait(5)
@@ -46,12 +48,16 @@ def get_product(item_name='носки белые nike длинные'):
     rating_res = get_rating(rating)
     link = f'https://market.yandex.ru/{link}'
     price = soup.find('span', attrs={'data-auto': 'snippet-price-current'}).text
-
+    price = re.sub(r"\D", "", price)
     driver.quit()
-    return title, re.sub("[^0-9]", "", price), rating_res, link
+    return ProductOutput(shop_name='Яндекс Маркет',
+                         title=title,
+                         price=price,
+                         rating_info=rating_res,
+                         link=link)
 
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product())
+    print(get_product('ryzen9 7900x3d'))
     print('Поиск завершен.')

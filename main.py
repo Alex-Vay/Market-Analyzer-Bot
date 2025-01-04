@@ -155,10 +155,11 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         # Отправка результатов пользователю
         text = ""
         results = filter(lambda x: x is not None, results)
-        for product in sorted(results, key=lambda x: int(x[1])):
-            subtext = f'<a href="{product[3]}">{product[0]}</a>\n' \
-                      f'<b>Цена (₽)</b>: {product[1]}\n' \
-                      f'<b>Отзывы и рейтинг</b>: {product[2]}\n\n'
+        for product in sorted(results, key=lambda output_object: int(output_object.price)):
+            subtext = f'<b>{product.shop_name}</b>\n' \
+                      f'<a href="{product.link}">{product.title}</a>\n' \
+                      f'<b>Цена (₽)</b>: {product.price}\n' \
+                      f'<b>Отзывы и рейтинг</b>: {product.rating_info}\n\n'
 
             text += subtext
         keyboard = [
