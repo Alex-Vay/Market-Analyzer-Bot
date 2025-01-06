@@ -1,8 +1,10 @@
+import re
+
 class ProductOutput:
     def __init__(self, shop_name, title, price, rating_info, link):
         self.__shop_name = shop_name
         self.__title = title
-        self.__price = price
+        self.__price = re.sub("[^0-9]", "", price)
         self.__rating_info = rating_info
         self.__link = link
 

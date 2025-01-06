@@ -1,8 +1,6 @@
-import re
 import requests
 from parsers.mvideo.config import headers, cookies
-import os
-
+from parsers.output_model import ProductOutput
 
 def get_data_mvideo(query):
     params = {
@@ -23,8 +21,6 @@ def get_data_mvideo(query):
 
         if resp.status_code == 200:
             products = resp.json()['body']['products']
-
-            # Добавляем обработчик
             query_lower = query.lower()
             for i, product in enumerate(products):
                 product_name_lower = product['name'].lower()
@@ -34,23 +30,26 @@ def get_data_mvideo(query):
                     for price in material_prices:
                         if price['productId'] == product_id:
                             truePriceObject = price
-                            break # Выходим из цикла после нахождения цены
-                    item_current_price = str(truePriceObject.get('price', {}).get('salePrice', "Цена не указана")) # Безопасное извлечение цены
+                            break
+                    item_current_price = str(truePriceObject.get('price', {}).get('salePrice', "Цена не указана"))
                     rating = product['rating']
                     rating_count_sales_str = rating.get('count') if rating.get('count') is not None else 'нет'
                     rating_star_str = round(rating.get('star'), 2) if rating.get('star') is not None else 'отсутствует'
                     rating_and_feedback = f"Отзывов - {rating_count_sales_str}, рейтинг {rating_star_str}"
-                    return product['name'], re.sub(r"\D", "", item_current_price), rating_and_feedback, link
-            return "Товар не найден" # Возвращаем, если ни один товар не подошел
-
+                    return ProductOutput(shop_name='М.Видео',
+                                  title=product['name'],
+                                  price=item_current_price,
+                                  rating_info=rating_and_feedback,
+                                  link=link)
         else:
             print(f'[!] Skipped')
-            return "Ошибка запроса" # Возвращаем, если произошла ошибка запроса
+            return None
 
     except Exception as e:
         print(f'[!] Skipped, {e.__class.name}')
-        return "Ошибка парсинга" # Возвращаем, если произошла ошибка парсинга
+        return None
 
 
 if __name__ == '__main__':
-    print(get_data_mvideo('Ноутбук Lenovo legion 7'))
+    product = get_data_mvideo('legion 7 pro')
+    print(product.price, product.link)

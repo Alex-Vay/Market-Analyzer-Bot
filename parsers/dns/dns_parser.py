@@ -1,7 +1,5 @@
 import re
 import time
-
-import requests
 from bs4 import BeautifulSoup
 import undetected_chromedriver as uc
 from selenium.common import TimeoutException
@@ -61,10 +59,6 @@ def get_product(item_name=""):
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"
-        # прокрутка до элемента, т.к. он может быть ниже
-        # element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_selector)))
-        # driver.execute_script("window.scrollTo(0, 1500)")
-        # подождем пока дозагрузится цена
         time.sleep(25)
         print(driver.current_url)
         WebDriverWait(driver, 10).until(
@@ -87,4 +81,5 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    print(get_product('legion 7 pro'))
+    product = get_product('legion 7 pro')
+    print(product.price, product.link)

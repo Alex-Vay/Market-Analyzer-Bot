@@ -26,13 +26,9 @@ def get_product_rating(product_soup):
 def get_product(item_name=""):
     user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'  # chrome
     options = uc.ChromeOptions()
-    # options.add_argument("--headless")
     options.add_argument(f'user-agent={user_agent}')
     options.page_load_strategy = 'none'
-    driver = uc.Chrome(options=options,
-                       # desired_capabilities=caps
-                       )
-    # driver.set_window_position(-2400, -2400)
+    driver = uc.Chrome(options=options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         'source': '''
             delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
@@ -50,7 +46,7 @@ def get_product(item_name=""):
     driver.execute_script("window.stop();")
     soup = BeautifulSoup(element.get_attribute('outerHTML'), 'lxml')
     product_info = soup.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__contentWithAside')}).find('a')
-    product_url = 'https://' + product_info.get('href')
+    product_url = 'https:' + product_info.get('href')
     product_price = get_product_price(product_info)
     title_and_rating = product_info.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
     rating_and_feedback = get_product_rating(product_info)
@@ -65,4 +61,5 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    print(get_product('realme 12'))
+    product = get_product('legion 7 pro')
+    print(product.price, product.link)
