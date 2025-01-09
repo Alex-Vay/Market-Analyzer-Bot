@@ -158,7 +158,7 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         for product in sorted(results, key=lambda output_object: int(output_object.price)):
             subtext = f'<b>{product.shop_name}</b>\n' \
                       f'<a href="{product.link}">{product.title}</a>\n' \
-                      f'<b>Цена (₽)</b>: {product.price}\n' \
+                      f'<b>Цена от(₽)</b>: {product.price}\n' \
                       f'<b>Отзывы и рейтинг</b>: {product.rating_info}\n\n'
 
             text += subtext
