@@ -27,3 +27,6 @@ class ProductOutput:
     @property
     def link(self):
         return self.__link
+
+    def __repr__(self):
+        return f"{self.__title}, {self.__price}, {self.__link}"
