@@ -1,8 +1,9 @@
 import os
 from sentence_transformers import SentenceTransformer, util
 
-model_dir = 'all-MiniLM-L6-v2_local'
-if os.path.exists(model_dir):
+project_root = os.path.abspath(os.path.join(os.path.realpath(__file__), '../../'))
+model_dir = os.path.join(project_root, 'all-MiniLM-L6-v2_local')
+if os.path.isdir(model_dir):
     model = SentenceTransformer(model_dir)
 else:
     model = SentenceTransformer('all-MiniLM-L6-v2')
