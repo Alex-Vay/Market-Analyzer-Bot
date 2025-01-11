@@ -38,12 +38,12 @@ def get_data_mvideo(ids):
                            headers=headers).json()
         page_products_ids = resp['body']['products']
         data = {
-            'productIds': page_products_ids[:5],
+            'productIds': page_products_ids[:10],
         }
         resp = session.post('https://www.mvideo.ru/bff/product-details/list', cookies=cookies, headers=headers,
                             json=data)
         data = {
-            'productIds': ','.join(page_products_ids[:5]),
+            'productIds': ','.join(page_products_ids[:10]),
         }
         prices = session.get('https://www.mvideo.ru/bff/products/prices', params=data, cookies=cookies,
                              headers=headers).json()
@@ -67,5 +67,5 @@ def get_data_mvideo(ids):
 
 
 if __name__ == '__main__':
-    product = get_data_mvideo('lenovo legion')
+    product = get_data_mvideo('ноутбук lenovo legion')
     print(product.price, product.link)

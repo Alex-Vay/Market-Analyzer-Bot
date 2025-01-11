@@ -1,7 +1,12 @@
+import os
 from sentence_transformers import SentenceTransformer, util
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
-
+model_dir = 'all-MiniLM-L6-v2_local'
+if os.path.exists(model_dir):
+    model = SentenceTransformer(model_dir)
+else:
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    model.save(model_dir)
 
 def smart_function(product_name, titles_dict):
     query_embedding = model.encode(product_name, convert_to_tensor=True)

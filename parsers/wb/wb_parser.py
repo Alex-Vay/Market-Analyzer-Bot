@@ -36,7 +36,7 @@ def get_product(item_name):
     driver.get(url)
     wait_selector = '#app #catalog .catalog-page__content .product-card .product-card__wrapper .product-card__rating-wrap'
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)))
-    cards_count = 1
+    cards_count = 10
     xpath_selector = f'//div[@id="catalog"]//div[@class="catalog-page__content"]//article[@data-card-index < {cards_count}]'
     product_cards = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH, xpath_selector))
