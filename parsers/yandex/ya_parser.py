@@ -37,7 +37,7 @@ def get_product(item_name):
     options = uc.ChromeOptions()
     options.add_argument(f'user-agent={user_agent}')
     driver = uc.Chrome(options=options)
-    # driver.set_window_position(-2400, -2400)
+    driver.set_window_position(-2400, -2400)
     url = f'https://market.yandex.ru/search?text={item_name}'  # &how=aprice
     driver.get(url)
     driver.implicitly_wait(5)
@@ -51,6 +51,8 @@ def get_product(item_name):
     selector_title = 'div._1ENFO div[data-baobab-name=title]'
     titles_dict = {i: products[i].find_element(By.CSS_SELECTOR, selector_title).text for i in range(len(products))}
     best_title_index = smart_function(item_name, titles_dict)
+    if best_title_index is None:
+        return None
     best_product_div = products[best_title_index]
 
     soup = bs4.BeautifulSoup(best_product_div.get_attribute('outerHTML'), 'lxml')

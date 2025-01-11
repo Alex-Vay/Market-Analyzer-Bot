@@ -46,6 +46,8 @@ def get_product(item_name):
             By.CSS_SELECTOR, '.product-card__middle-wrap .product-card__brand-wrap .product-card__name').text for
         product in product_cards}
     most_matched_titles_index = smart_function(item_name, products_titles)
+    if most_matched_titles_index is None:
+        return None
     product_card = product_cards[most_matched_titles_index]
     soup = BeautifulSoup(product_card.get_attribute('outerHTML'), 'lxml')
     product_link = soup.find('a', attrs={'class': 'product-card__link'}).get('href')

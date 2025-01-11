@@ -53,6 +53,8 @@ def get_data_mvideo(ids):
             products = resp.json()['body']['products']
             titles_dict = {i: products[i]['name'] for i in range(len(products))}
             best_match_title_index = smart_function(ids, titles_dict)
+            if best_match_title_index is None:
+                return None
             best_match_product = products[best_match_title_index]
             product_output_object = parse(best_match_product, material_prices)
             return product_output_object

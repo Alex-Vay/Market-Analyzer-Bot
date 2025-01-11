@@ -71,6 +71,8 @@ def get_product(item_name=""):
             'div', attrs={'class': re.compile('^red-snippet_RedSnippet__title')}).text
         titles_dict[i] = product_title
     best_match_title_index = smart_function(item_name, titles_dict)
+    if best_match_title_index is None:
+        return None
     best_match_product = soup_objects[best_match_title_index]
     product_output = parse(best_match_product)
     return product_output

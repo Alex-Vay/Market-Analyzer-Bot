@@ -55,7 +55,7 @@ def get_product(item_name=""):
     options.add_argument(f'user-agent={user_agent}')
     options.page_load_strategy = 'none'
     driver = uc.Chrome(options=options)
-    # driver.set_window_position(-2400, -2400)
+    driver.set_window_position(-2400, -2400)
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"
@@ -73,6 +73,8 @@ def get_product(item_name=""):
             product_title_short = re.search(r'^(.*?)\s*\[', product_title).group().replace('"', '')
             titles_dict[i] = product_title_short
         best_match_title_index = smart_function(item_name, titles_dict)
+        if best_match_title_index is None:
+            return None
         best_match_product = products_div[best_match_title_index]
         driver.execute_script("window.stop();")
         product_div_source = best_match_product.get_attribute('outerHTML')

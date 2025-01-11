@@ -40,6 +40,8 @@ def get_product(item_name: str):
             By.CSS_SELECTOR, '.tile-clickable-element .tsBody500Medium').text.split('"')[0] for product in products}
 
     best_match_index = smart_function(item_name, titles_and_urls)
+    if best_match_index is None:
+        return None
     product_card = products[best_match_index]
     soup = BeautifulSoup(product_card.get_attribute('outerHTML'), 'lxml')
     product_url = "https://www.ozon.ru" + soup.find('a', attrs={'class': 'tile-clickable-element'}).get('href')

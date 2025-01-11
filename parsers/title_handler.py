@@ -14,4 +14,4 @@ def smart_function(product_name, titles_dict):
         except Exception as e:
             print(f"Ошибка при обработке товара: {e}")
             continue
-    return best_match_index
+    return best_match_index if best_ratio >= 0.15 else None

@@ -154,7 +154,9 @@ async def start_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
         # Отправка результатов пользователю
         text = ""
-        results = filter(lambda x: x is not None, results)
+        results = tuple(filter(lambda x: x is not None, results))
+        if len(results) == 0:
+            text = "Ничего не найдено\nУточните что за товар либо найдите другой"
         for product in sorted(results, key=lambda output_object: int(output_object.price)):
             subtext = f'<b>{product.shop_name}</b>\n' \
                       f'<a href="{product.link}">{product.title}</a>\n' \
