@@ -27,16 +27,11 @@ def parse(best_match_product: dict, material_prices):
 
 
 def get_data_mvideo(ids):
-    if not os.path.exists('data'):
-        os.mkdir('data')
     params = {
         'offset': '0',
-        # 'filterParams': 'WyJ0b2xrby12LW5hbGljaGlpIiwiLTEyIiwiZGEiXQ==',
         'doTranslit': 'true',
-        'limit': '5',
-        'query': f'{ids}',
-        # 'context': 'v2dzaG9wX2lkZFMwMDJhcXXQvdC+0YPRgtCx0YPQuiBsZW5vdm9sY2F0ZWdvcnlfaWRzn///',
-        # 'sort' : 'price_asc',
+        'limit': '24',
+        'query': ids,
     }
     session = requests.Session()
     try:
@@ -64,8 +59,12 @@ def get_data_mvideo(ids):
 
         else:
             print(f'[!] Skipped')
+            return None
     except Exception as e:
-        print(f'[!] Skipped, {e.__class__.__name__}')
+        print(f'[!] Skipped, {e.__class.name}')
+        return None
 
 
-print(get_data_mvideo('macbook pro'))
+if __name__ == '__main__':
+    product = get_data_mvideo('legion')
+    print(product.price, product.link)

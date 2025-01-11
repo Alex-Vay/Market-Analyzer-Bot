@@ -60,7 +60,6 @@ def get_product(item_name=""):
     try:
         css_selector = ".products-list__content .catalog-product"
         time.sleep(25)
-        print(driver.current_url)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")

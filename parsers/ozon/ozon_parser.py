@@ -1,3 +1,4 @@
+import difflib
 import re
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -29,14 +30,14 @@ def get_product(item_name: str):
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, '#paginatorContent .tile-root')))
     products = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH,
-                                                                                    "//div[@id='paginatorContent']//div[@data-index < 1]")))
+                                                                                    "//div[@id='paginatorContent']//div[@data-index < 10]")))
 
     element = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, '.container div[data-widget="searchResultsSort"] input')))
     driver.execute_script("return arguments[0].scrollIntoView(true);", element)
     titles_and_urls = {
         int(product.get_attribute('data-index')): product.find_element(
-            By.CSS_SELECTOR, '.tile-clickable-element .tsBody500Medium').text for product in products}
+            By.CSS_SELECTOR, '.tile-clickable-element .tsBody500Medium').text.split('"')[0] for product in products}
 
     best_match_index = smart_function(item_name, titles_and_urls)
     product_card = products[best_match_index]
