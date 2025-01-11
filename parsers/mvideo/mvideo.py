@@ -1,7 +1,6 @@
-import os
 import re
 import requests
-from config import headers, cookies
+from parsers.mvideo.config import headers, cookies
 from parsers.title_handler import smart_function
 from parsers.output_model import ProductOutput
 
@@ -18,7 +17,7 @@ def parse(best_match_product: dict, material_prices):
     rating = best_match_product['rating']
     rating_count_sales_str = rating.get('count') if rating.get('count') is not None else 'нет'
     rating_star_str = round(rating.get('star'), 2) if rating.get('star') is not None else 'отсутствует'
-    rating_and_feedback = f"отзывов {rating_count_sales_str}, рейтинг {rating_star_str}"
+    rating_and_feedback = f"рейтинг {rating_star_str}, отзывов {rating_count_sales_str}, "
     return ProductOutput(shop_name='М.Видео',
                          title=best_match_product['name'],
                          price=price,
@@ -68,5 +67,5 @@ def get_data_mvideo(ids):
 
 
 if __name__ == '__main__':
-    product = get_data_mvideo('legion')
+    product = get_data_mvideo('lenovo legion')
     print(product.price, product.link)

@@ -1,17 +1,23 @@
-import difflib
+from sentence_transformers import SentenceTransformer, util
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 
 def smart_function(product_name, titles_dict):
-    best_match_index = 0
-    best_ratio = 0
+    query_embedding = model.encode(product_name, convert_to_tensor=True)
+
+    best_match_index = None
+    best_score = -1
+
     for index, product_title in titles_dict.items():
         try:
-            sm = difflib.SequenceMatcher(None, product_name.lower(), product_title.lower())
-            similarity_ratio = sm.ratio()
-            if similarity_ratio > best_ratio:
-                best_ratio = similarity_ratio
+            product_embedding = model.encode(product_title, convert_to_tensor=True)
+            similarity_score = util.cos_sim(query_embedding, product_embedding).item()
+
+            if similarity_score > best_score:
+                best_score = similarity_score
                 best_match_index = index
         except Exception as e:
-            print(f"Ошибка при обработке товара: {e}")
+            print(f"Ошибка при обработке товара '{product_title}': {e}")
             continue
-    return best_match_index if best_ratio >= 0.15 else None
+    return best_match_index if best_score >= 0.15 else None

@@ -23,7 +23,7 @@ def get_product_rating_and_feedback(soup):
         'class': 'catalog-product__rating'})
     product_rating_feedback_text = product_rating_feedback.text
     if 'нет' in product_rating_feedback_text or product_rating_feedback_text is None:
-        product_rating, product_feedback = 'отсутствует', '0 отзывов'
+        product_rating, product_feedback = 'рейтинг отсутствует', 'отзывов нет'
     else:
         product_rating, product_feedback = product_rating_feedback_text.split('|')
     product_rating_feedback_str = f"рейтинг {product_rating.strip()}, {product_feedback}"
@@ -59,8 +59,9 @@ def get_product(item_name=""):
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"
-        WebDriverWait(driver, 25).until(
-            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
+        time.sleep(25)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
         element = driver.find_element(By.CSS_SELECTOR, css_selector)
         driver.execute_script("arguments[0].scrollIntoView();", element)
