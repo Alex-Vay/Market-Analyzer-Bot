@@ -2,7 +2,7 @@ import os
 import re
 import requests
 from config import headers, cookies
-from parsers.ozon.ozon_parser import smart_function
+from parsers.title_handler import smart_function
 from parsers.output_model import ProductOutput
 
 

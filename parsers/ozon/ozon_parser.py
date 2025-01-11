@@ -1,4 +1,3 @@
-import difflib
 import re
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -6,6 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import undetected_chromedriver as uc
 from parsers.output_model import ProductOutput
+from parsers.title_handler import smart_function
 
 
 def get_rating(rating_object):
@@ -15,22 +15,6 @@ def get_rating(rating_object):
         product_rating_str = f"рейтинг {rating_feedback[0].text.strip()}, {feedback_count_str}"
         return product_rating_str
     return "Рейтинг отсутствует"
-
-
-def smart_function(product_name, titles_dict):
-    best_match_index = 0
-    best_ratio = 0
-    for index, product_title in titles_dict.items():
-        try:
-            sm = difflib.SequenceMatcher(None, product_name.lower(), product_title.lower())
-            similarity_ratio = sm.ratio()
-            if similarity_ratio > best_ratio:
-                best_ratio = similarity_ratio
-                best_match_index = index
-        except Exception as e:
-            print(f"Ошибка при обработке товара: {e}")
-            continue
-    return best_match_index
 
 
 def get_product(item_name: str):

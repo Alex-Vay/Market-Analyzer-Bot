@@ -6,24 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium import webdriver
 from parsers.output_model import ProductOutput
-
-
-def smart_function(searched_title: str, index_and_titles: dict):
-    best_match_index = 0
-    best_ratio = 0
-    for index, product_title in index_and_titles.items():
-        try:
-
-            sm = difflib.SequenceMatcher(None, searched_title.lower(), product_title.lower())
-            similarity_ratio = sm.ratio()
-
-            if similarity_ratio > best_ratio:
-                best_ratio = similarity_ratio
-                best_match_index = index
-        except Exception as e:
-            print(f"Ошибка при обработке товара: {e}")
-            continue
-    return best_match_index
+from parsers.title_handler import smart_function
 
 
 def get_rating_and_sales(soup_object: BeautifulSoup):

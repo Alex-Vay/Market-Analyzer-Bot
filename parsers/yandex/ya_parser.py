@@ -3,7 +3,7 @@ import bs4
 from selenium.webdriver.common.by import By
 import undetected_chromedriver as uc
 from parsers.output_model import ProductOutput
-from parsers.ozon.ozon_parser import smart_function
+from parsers.title_handler import smart_function
 
 
 def get_rating(rating_tag_object):
