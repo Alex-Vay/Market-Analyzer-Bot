@@ -59,7 +59,7 @@ def get_product(item_name=""):
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"
-        time.sleep(40)
+        time.sleep(32)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
@@ -90,5 +90,5 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    product = get_product('macbook pro m4 ')
+    product = get_product('ноутбук lenovo legion')
     print(product)

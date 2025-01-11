@@ -30,7 +30,7 @@ def parse(soup: BeautifulSoup):
     title_and_rating = product_info.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__trustAndTitle')})
     rating_and_feedback = get_product_rating(product_info)
     product_title = title_and_rating.find('div', attrs={'class': re.compile('^red-snippet_RedSnippet__title')}).text
-    price = re.sub(r"\D", "", product_price)
+    price = re.sub(r"\D", "", product_price.split(",")[0])
     return ProductOutput(shop_name='Алиэкспресс',
                          title=product_title,
                          price=price,
@@ -79,5 +79,5 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    product = get_product('ddr5')
+    product = get_product('ноутбук lenovo legion')
     print(product)
