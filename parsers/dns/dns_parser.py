@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from parsers.output_model import ProductOutput
-
+from parsers.title_handler import smart_function
 
 def get_product_price(soup):
     try:
@@ -55,20 +55,27 @@ def get_product(item_name=""):
     options.add_argument(f'user-agent={user_agent}')
     options.page_load_strategy = 'none'
     driver = uc.Chrome(options=options)
-    driver.set_window_position(-2400, -2400)
+    # driver.set_window_position(-2400, -2400)
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
     try:
         css_selector = ".products-list__content .catalog-product"
-        time.sleep(25)
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
+        WebDriverWait(driver, 25).until(
+            EC.visibility_of_all_elements_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
         element = driver.find_element(By.CSS_SELECTOR, css_selector)
         driver.execute_script("arguments[0].scrollIntoView();", element)
 
-        product_div = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
+        products_div = driver.find_elements(By.CSS_SELECTOR, css_selector)[:10]
+        titles_dict = {}
+        for i, product_div in enumerate(products_div):
+            product_title = product_div.find_element(By.CSS_SELECTOR, "a.catalog-product__name span").text
+            product_title_short = re.search(r'^(.*?)\s*\[', product_title).group().replace('"', '')
+            titles_dict[i] = product_title_short
+        best_match_title_index = smart_function(item_name, titles_dict)
+        best_match_product = products_div[best_match_title_index]
         driver.execute_script("window.stop();")
-        product_div_source = product_div.get_attribute('outerHTML')
+        product_div_source = best_match_product.get_attribute('outerHTML')
         soup = BeautifulSoup(product_div_source, 'lxml')
         extracted_data = extract_data(soup)
         driver.quit()
@@ -80,5 +87,5 @@ def get_product(item_name=""):
 
 
 if __name__ == '__main__':
-    product = get_product('legion 7 pro')
-    print(product.price, product.link)
+    product = get_product('macbook pro m4 ')
+    print(product)
