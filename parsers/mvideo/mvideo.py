@@ -50,7 +50,6 @@ def get_data_mvideo(ids):
         material_prices = prices['body']['materialPrices']
         if resp.status_code == 200:
             products = resp.json()['body']['products']
-            print(products)
             titles_dict = {i: products[i]['name'] for i in range(len(products))}
             best_match_title_index = smart_function(ids, titles_dict)
             if best_match_title_index is None:

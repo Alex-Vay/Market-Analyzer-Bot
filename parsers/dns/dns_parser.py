@@ -59,7 +59,7 @@ def get_product(item_name=""):
     driver.get(f'https://www.dns-shop.ru/search/?q={item_name}&order=price-asc')
     try:
         css_selector = ".products-list__content .catalog-product"
-        time.sleep(25)
+        time.sleep(30)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
