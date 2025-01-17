@@ -30,7 +30,7 @@ def get_product(item_name: str):
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, '#paginatorContent .tile-root')))
     products = WebDriverWait(driver, 10).until(EC.presence_of_all_elements_located((By.XPATH,
-                                                                                    "//div[@id='paginatorContent']//div[@data-index < 10]")))
+                                                                                    "//div[@id='paginatorContent']//div[@data-index < 24]")))
 
     element = WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, '.container div[data-widget="searchResultsSort"] input')))

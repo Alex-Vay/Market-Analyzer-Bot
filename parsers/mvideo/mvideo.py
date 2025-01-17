@@ -38,18 +38,19 @@ def get_data_mvideo(ids):
                            headers=headers).json()
         page_products_ids = resp['body']['products']
         data = {
-            'productIds': page_products_ids[:10],
+            'productIds': page_products_ids[:24],
         }
         resp = session.post('https://www.mvideo.ru/bff/product-details/list', cookies=cookies, headers=headers,
                             json=data)
         data = {
-            'productIds': ','.join(page_products_ids[:10]),
+            'productIds': ','.join(page_products_ids[:24]),
         }
         prices = session.get('https://www.mvideo.ru/bff/products/prices', params=data, cookies=cookies,
                              headers=headers).json()
         material_prices = prices['body']['materialPrices']
         if resp.status_code == 200:
             products = resp.json()['body']['products']
+            print(products)
             titles_dict = {i: products[i]['name'] for i in range(len(products))}
             best_match_title_index = smart_function(ids, titles_dict)
             if best_match_title_index is None:

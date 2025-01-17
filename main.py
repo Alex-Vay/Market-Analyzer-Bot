@@ -21,7 +21,7 @@ from parsers.aliexpress import ali_parser
 load_dotenv()
 
 # Access environment variables as if they came from the actual environment
-TOKEN = "Ваш токен"
+TOKEN = os.getenv('TOKEN')
 
 
 STORES = ['Ozon', 'Wildberries', 'Яндекс Маркет', 'Mvideo', 'DNS', 'AliExpress']

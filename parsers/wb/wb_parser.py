@@ -31,12 +31,12 @@ def get_product(item_name):
     options = webdriver.ChromeOptions()
     options.add_argument(f'user-agent={user_agent}')
     driver = webdriver.Chrome(options=options)
-    url = f'https://www.wildberries.ru/catalog/0/search.aspx?search={item_name}'
+    url = f'https://www.wildberries.ru/catalog/0/search.aspx?page=1&sort=priceup&search={item_name}'
     driver.set_window_position(-2400, -2400)
     driver.get(url)
     wait_selector = '#app #catalog .catalog-page__content .product-card .product-card__wrapper .product-card__rating-wrap'
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, wait_selector)))
-    cards_count = 10
+    cards_count = 24
     xpath_selector = f'//div[@id="catalog"]//div[@class="catalog-page__content"]//article[@data-card-index < {cards_count}]'
     product_cards = WebDriverWait(driver, 10).until(
         EC.presence_of_all_elements_located((By.XPATH, xpath_selector))
@@ -63,5 +63,5 @@ def get_product(item_name):
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product('процессор i5 12400f материнская плата'))
+    print(get_product('ноутбук lenovo legion'))
     print('Поиск завершен.')

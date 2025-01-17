@@ -26,4 +26,4 @@ def smart_function(product_name, titles_dict):
         except Exception as e:
             print(f"Ошибка при обработке товара '{product_title}': {e}")
             continue
-    return best_match_index if best_score >= 0.15 else None
+    return best_match_index if best_score >= 0.5 else None

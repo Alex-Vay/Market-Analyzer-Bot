@@ -56,10 +56,10 @@ def get_product(item_name=""):
     options.page_load_strategy = 'none'
     driver = uc.Chrome(options=options)
     driver.set_window_position(-2400, -2400)
-    driver.get(f'https://www.dns-shop.ru/search/?q={item_name}')
+    driver.get(f'https://www.dns-shop.ru/search/?q={item_name}&order=price-asc')
     try:
         css_selector = ".products-list__content .catalog-product"
-        time.sleep(40)
+        time.sleep(25)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, css_selector + ' .product-buy')))
         driver.execute_script("window.stop();")
@@ -67,7 +67,7 @@ def get_product(item_name=""):
         driver.execute_script("arguments[0].scrollIntoView();", element)
 
         WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, css_selector)))
-        products_div = driver.find_elements(By.CSS_SELECTOR, css_selector)[:10]
+        products_div = driver.find_elements(By.CSS_SELECTOR, css_selector)[:24]
         titles_dict = {}
         for i, product_div in enumerate(products_div):
             product_title = product_div.find_element(By.CSS_SELECTOR, "a.catalog-product__name span").text

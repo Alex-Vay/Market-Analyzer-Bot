@@ -38,7 +38,7 @@ def get_product(item_name):
     options.add_argument(f'user-agent={user_agent}')
     driver = uc.Chrome(options=options)
     driver.set_window_position(-2400, -2400)
-    url = f'https://market.yandex.ru/search?text={item_name}'  # &how=aprice
+    url = f'https://market.yandex.ru/search?text={item_name}&how=aprice'
     driver.get(url)
     driver.implicitly_wait(5)
     # прокрутка
@@ -47,7 +47,7 @@ def get_product(item_name):
     driver.execute_script("return arguments[0].scrollIntoView(true);", cart_button)
 
     selector_div_product = '#SerpStatic #ServerLayoutRenderer article[data-auto="searchOrganic"] div._1H-VK'
-    products = driver.find_elements(By.CSS_SELECTOR, selector_div_product)[:10]
+    products = driver.find_elements(By.CSS_SELECTOR, selector_div_product)[:24]
     selector_title = 'div._1ENFO div[data-baobab-name=title]'
     titles_dict = {i: products[i].find_element(By.CSS_SELECTOR, selector_title).text for i in range(len(products))}
     best_title_index = smart_function(item_name, titles_dict)
@@ -63,5 +63,5 @@ def get_product(item_name):
 
 if __name__ == '__main__':
     print('Поиск товара...')
-    print(get_product('intel core i7-13700k'))
+    print(get_product('ноутбук lenovo legion'))
     print('Поиск завершен.')

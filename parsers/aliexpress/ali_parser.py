@@ -52,9 +52,9 @@ def get_product(item_name=""):
       '''
     })
     search_text = item_name.replace(' ', '+')
-    url = f'https://aliexpress.ru/wholesale?SearchText={search_text}&g=y&page=1'  # &sorting=price
+    url = f'https://aliexpress.ru/wholesale?SearchText={search_text}&SortType=price_asc&g=y&page=1'  # &sorting=price
     driver.get(url)
-    xpath_selector = "//div[@id='__aer_root__']//div[starts-with(@class, 'SnowSearchWrap_SnowSearchWrap__content')]//div[starts-with(@class, 'red-snippet_RedSnippet__grid')]//div[@data-index < 5]"
+    xpath_selector = "//div[@id='__aer_root__']//div[starts-with(@class, 'SnowSearchWrap_SnowSearchWrap__content')]//div[starts-with(@class, 'red-snippet_RedSnippet__grid')]//div[@data-index < 24]"
     # ожидание
     WebDriverWait(driver, 30).until(
         EC.visibility_of_all_elements_located((By.XPATH, xpath_selector)))
